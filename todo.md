@@ -10,9 +10,9 @@ This document tracks the progress of implementing the MBTA MCP server according 
 - [x] Implement basic MCP server skeleton
 
 ### Phase 2: MBTA API Client
-- [ ] Create client for MBTA API interactions
-- [ ] Implement data models matching API responses
-- [ ] Build authentication and error handling
+- [x] Create client for MBTA API interactions
+- [x] Implement data models matching API responses
+- [x] Build authentication and error handling
 
 ### Phase 3: Core MCP Implementation
 - [ ] Implement basic MCP protocol handlers
@@ -56,19 +56,19 @@ This document tracks the progress of implementing the MBTA MCP server according 
 ### Phase 2: MBTA API Client
 
 #### Step 2.1: API Client Foundation
-- [ ] Create HTTP client with proper timeout handling
-- [ ] Implement API authentication
-- [ ] Add basic error handling
+- [x] Create HTTP client with proper timeout handling
+- [x] Implement API authentication
+- [x] Add basic error handling
 
 #### Step 2.2: Core Data Models
-- [ ] Define route models
-- [ ] Create stop/station models
-- [ ] Implement schedule data structures
+- [x] Define route models
+- [x] Create stop/station models
+- [x] Implement schedule data structures
 
 #### Step 2.3: Client Integration Tests
-- [ ] Add mocked API responses
-- [ ] Implement integration tests for API client
-- [ ] Test error handling and rate limiting
+- [x] Add mocked API responses
+- [x] Implement integration tests for API client
+- [x] Test error handling and rate limiting
 
 ### Phase 3: Core MCP Implementation
 
