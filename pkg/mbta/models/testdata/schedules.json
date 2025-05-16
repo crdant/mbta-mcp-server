@@ -1,0 +1,99 @@
+{
+  "data": [
+    {
+      "id": "schedule-1",
+      "type": "schedule",
+      "attributes": {
+        "arrival_time": "2023-05-20T12:00:00-04:00",
+        "departure_time": "2023-05-20T12:02:00-04:00",
+        "drop_off_type": 0,
+        "pickup_type": 0,
+        "stop_headsign": "Alewife",
+        "stop_sequence": 1,
+        "timepoint": true
+      },
+      "relationships": {
+        "route": {
+          "data": {
+            "id": "Red",
+            "type": "route"
+          }
+        },
+        "stop": {
+          "data": {
+            "id": "place-sstat",
+            "type": "stop"
+          }
+        },
+        "trip": {
+          "data": {
+            "id": "Red-123456-20230520",
+            "type": "trip"
+          }
+        },
+        "prediction": {}
+      }
+    },
+    {
+      "id": "schedule-2",
+      "type": "schedule",
+      "attributes": {
+        "arrival_time": "2023-05-20T12:10:00-04:00",
+        "departure_time": "2023-05-20T12:11:00-04:00",
+        "drop_off_type": 0,
+        "pickup_type": 0,
+        "stop_headsign": "Alewife",
+        "stop_sequence": 2,
+        "timepoint": true
+      },
+      "relationships": {
+        "route": {
+          "data": {
+            "id": "Red",
+            "type": "route"
+          }
+        },
+        "stop": {
+          "data": {
+            "id": "place-dwnxg",
+            "type": "stop"
+          }
+        },
+        "trip": {
+          "data": {
+            "id": "Red-123456-20230520",
+            "type": "trip"
+          }
+        },
+        "prediction": {}
+      }
+    }
+  ],
+  "included": [
+    {
+      "id": "Red-123456-20230520",
+      "type": "trip",
+      "attributes": {
+        "block_id": "R-123456-2023",
+        "direction_id": 0,
+        "headsign": "Alewife",
+        "name": "",
+        "wheelchair_accessible": 1
+      },
+      "relationships": {
+        "route": {
+          "data": {
+            "id": "Red",
+            "type": "route"
+          }
+        },
+        "service": {
+          "data": {
+            "id": "service-weekday",
+            "type": "service"
+          }
+        }
+      }
+    }
+  ]
+}
