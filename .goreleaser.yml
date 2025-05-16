@@ -41,7 +41,7 @@ nix:
       name: nixpkgs
     homepage: https://github.com/crdant/mbta-mcp-server
     description: "An MCP server that communicates with the MBTA API to provide Boston-area transit information"
-    license: "MIT"
+    license: mit
     install: |
       mkdir -p $out/bin
       cp mbta-mcp-server $out/bin/
