@@ -32,14 +32,14 @@ func NewMockServer(definitions []ResponseDefinition) *httptest.Server {
 				// Set status code
 				w.WriteHeader(def.StatusCode)
 				// Write response
-				w.Write([]byte(def.Response))
+				_, _ = w.Write([]byte(def.Response))
 				return
 			}
 		}
 
 		// If no definition matches, return 404
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(`{"errors":[{"status":"404","code":"not_found","title":"Not Found","detail":"The requested resource was not found"}]}`))
+		_, _ = w.Write([]byte(`{"errors":[{"status":"404","code":"not_found","title":"Not Found","detail":"The requested resource was not found"}]}`))
 	}))
 }
 
@@ -60,7 +60,7 @@ func MockValidAPIKeyMiddleware(next http.Handler) http.Handler {
 		apiKey := r.Header.Get("X-API-Key")
 		if apiKey == "" || apiKey == "invalid-key" {
 			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte(`{"errors":[{"status":"401","code":"unauthorized","title":"Unauthorized request","detail":"API key missing or invalid"}]}`))
+			_, _ = w.Write([]byte(`{"errors":[{"status":"401","code":"unauthorized","title":"Unauthorized request","detail":"API key missing or invalid"}]}`))
 			return
 		}
 		next.ServeHTTP(w, r)
@@ -74,7 +74,7 @@ func MockRateLimitMiddleware(next http.Handler) http.Handler {
 		if strings.Contains(r.URL.Path, "rate-limited") {
 			w.Header().Set("Retry-After", "60")
 			w.WriteHeader(http.StatusTooManyRequests)
-			w.Write([]byte(`{"errors":[{"status":"429","code":"rate_limited","title":"Rate Limit Exceeded","detail":"You have exceeded your rate limit"}]}`))
+			_, _ = w.Write([]byte(`{"errors":[{"status":"429","code":"rate_limited","title":"Rate Limit Exceeded","detail":"You have exceeded your rate limit"}]}`))
 			return
 		}
 		next.ServeHTTP(w, r)
@@ -253,7 +253,7 @@ func StandardMockServer() (*httptest.Server, error) {
 	handler.HandleFunc("/routes", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/vnd.api+json")
 		w.WriteHeader(http.StatusOK)
-		io.WriteString(w, routesResponse)
+		_, _ = io.WriteString(w, routesResponse)
 	})
 
 	// Single route endpoint
@@ -261,28 +261,28 @@ func StandardMockServer() (*httptest.Server, error) {
 		w.Header().Set("Content-Type", "application/vnd.api+json")
 		w.WriteHeader(http.StatusOK)
 		// Extract just the Red line from the fixture
-		io.WriteString(w, `{"data": {"id":"Red","type":"route","attributes":{"color":"DA291C","description":"Rapid Transit","direction_destinations":["Alewife","Ashmont/Braintree"],"direction_names":["Outbound","Inbound"],"fare_class":"Rapid Transit","long_name":"Red Line","short_name":"","sort_order":10010,"text_color":"FFFFFF","type":1},"links":{"self":"/routes/Red"},"relationships":{"line":{"data":{"id":"line-Red","type":"line"}}}}}`)
+		_, _ = io.WriteString(w, `{"data": {"id":"Red","type":"route","attributes":{"color":"DA291C","description":"Rapid Transit","direction_destinations":["Alewife","Ashmont/Braintree"],"direction_names":["Outbound","Inbound"],"fare_class":"Rapid Transit","long_name":"Red Line","short_name":"","sort_order":10010,"text_color":"FFFFFF","type":1},"links":{"self":"/routes/Red"},"relationships":{"line":{"data":{"id":"line-Red","type":"line"}}}}}`)
 	})
 
 	// Stops endpoint
 	handler.HandleFunc("/stops", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/vnd.api+json")
 		w.WriteHeader(http.StatusOK)
-		io.WriteString(w, stopsResponse)
+		_, _ = io.WriteString(w, stopsResponse)
 	})
 
 	// Schedules endpoint
 	handler.HandleFunc("/schedules", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/vnd.api+json")
 		w.WriteHeader(http.StatusOK)
-		io.WriteString(w, schedulesResponse)
+		_, _ = io.WriteString(w, schedulesResponse)
 	})
 
 	// Not found handler
 	handler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/vnd.api+json")
 		w.WriteHeader(http.StatusNotFound)
-		io.WriteString(w, `{"errors":[{"status":"404","code":"not_found","title":"Not Found","detail":"The requested resource was not found"}]}`)
+		_, _ = io.WriteString(w, `{"errors":[{"status":"404","code":"not_found","title":"Not Found","detail":"The requested resource was not found"}]}`)
 	})
 
 	// Wrap with middleware
