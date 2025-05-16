@@ -1,6 +1,7 @@
 BINARY_NAME=mbta-mcp-server
 GIT_SHORT_SHA=$(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-VERSION=$(shell semver get release 2>/dev/null || echo "0.1.0")
+# Get the version from semver-cli, removing any 'v' prefix if present
+VERSION=$(shell semver get release 2>/dev/null | sed 's/^v//' || echo "0.1.0")
 BUILD_VERSION=$(VERSION)+build.$(GIT_SHORT_SHA)
 MAIN_PACKAGE=./cmd/server
 GO_FILES=$(shell find . -name '*.go' -not -path "./vendor/*")
@@ -12,7 +13,48 @@ semver-check:
 	@command -v semver > /dev/null || (echo "semver not found, installing..." && \
 	go install github.com/maykonlsf/semver-cli/cmd/semver@latest)
 
-.PHONY: all build clean test test-coverage lint vet fmt
+# Initialize semver if .semver.yaml doesn't exist
+.semver.yaml:
+	@echo "Initializing semver..."
+	@semver init
+
+# Version management targets
+init-semver: .semver.yaml
+
+alpha: .semver.yaml
+	@echo "Incrementing to next alpha version..."
+	@semver up alpha
+
+beta: .semver.yaml
+	@echo "Incrementing to next beta version..."
+	@semver up beta
+
+rc: .semver.yaml
+	@echo "Incrementing to next release candidate version..."
+	@semver up rc
+
+patch: .semver.yaml
+	@echo "Incrementing to next patch version..."
+	@semver up release
+
+minor: .semver.yaml
+	@echo "Incrementing to next minor version..."
+	@semver up minor
+
+major: .semver.yaml
+	@echo "Incrementing to next major version..."
+	@semver up major
+
+release: .semver.yaml
+	@echo "Creating final release from pre-release..."
+	@semver up release
+
+tag: .semver.yaml
+	@echo "Tagging current version in git..."
+	@git tag -a "v$(VERSION)" -m "Version $(VERSION)"
+	@echo "Tagged version $(VERSION)"
+
+.PHONY: all build clean test test-coverage lint vet fmt init-semver alpha beta rc patch minor major release tag
 
 all: clean fmt lint vet test build
 
@@ -88,95 +130,3 @@ keys:
 		openssl genrsa -out melange.rsa 4096; \
 		openssl rsa -in melange.rsa -pubout -out melange.rsa.pub; \
 	fi
-
-# Semver targets
-.PHONY: init-semver patch minor major alpha beta rc release
-
-# Initialize semver if not already initialized
-init-semver: semver-check
-	@if [ ! -f .semver.yaml ]; then \
-		echo "Initializing semver with default version..."; \
-		semver init; \
-	fi
-
-# Helper to update semver config file
-define update-semver-yaml
-	@CURR_VERSION=$$(semver get release) && \
-	echo "Version before: $$CURR_VERSION" && \
-	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $(1)" > .semver.yaml && \
-	echo "Version after: $(1)"
-endef
-
-# Patch version increment (implements custom logic since semver-cli doesn't support it directly)
-patch: semver-check init-semver
-	@echo "Bumping patch version..."
-	@CURR_VERSION=$$(semver get release) && \
-	$(eval PARTS := $$(subst ., ,$$CURR_VERSION)) \
-	$(eval MAJOR := $$(word 1,$$(PARTS))) \
-	$(eval MINOR := $$(word 2,$$(PARTS))) \
-	$(eval PATCH := $$(word 3,$$(PARTS))) \
-	$(eval NEW_PATCH := $$(shell expr $$(PATCH) + 1)) \
-	$(eval NEW_VERSION := $$(MAJOR).$$(MINOR).$$(NEW_PATCH)) \
-	$(call update-semver-yaml,$$(NEW_VERSION))
-
-# Minor version increment (implements custom logic since semver-cli doesn't support it directly)
-minor: semver-check init-semver
-	@echo "Bumping minor version..."
-	@CURR_VERSION=$$(semver get release) && \
-	$(eval PARTS := $$(subst ., ,$$CURR_VERSION)) \
-	$(eval MAJOR := $$(word 1,$$(PARTS))) \
-	$(eval MINOR := $$(word 2,$$(PARTS))) \
-	$(eval NEW_MINOR := $$(shell expr $$(MINOR) + 1)) \
-	$(eval NEW_VERSION := $$(MAJOR).$$(NEW_MINOR).0) \
-	$(call update-semver-yaml,$$(NEW_VERSION))
-
-# Major version increment (implements custom logic since semver-cli doesn't support it directly)
-major: semver-check init-semver
-	@echo "Bumping major version..."
-	@CURR_VERSION=$$(semver get release) && \
-	$(eval PARTS := $$(subst ., ,$$CURR_VERSION)) \
-	$(eval MAJOR := $$(word 1,$$(PARTS))) \
-	$(eval NEW_MAJOR := $$(shell expr $$(MAJOR) + 1)) \
-	$(eval NEW_VERSION := $$(NEW_MAJOR).0.0) \
-	$(call update-semver-yaml,$$(NEW_VERSION))
-
-# Alpha version (using built-in semver-cli functionality)
-alpha: semver-check init-semver
-	@echo "Creating alpha version..."
-	@CURR_VERSION=$$(semver get release) && \
-	semver up alpha && \
-	NEW_VERSION=$$(semver get alpha) && \
-	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
-
-# Beta version (using built-in semver-cli functionality)
-beta: semver-check init-semver
-	@echo "Creating beta version..."
-	@CURR_VERSION=$$(semver get release) && \
-	semver up beta && \
-	NEW_VERSION=$$(semver get beta) && \
-	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
-
-# Release candidate (using built-in semver-cli functionality)
-rc: semver-check init-semver
-	@echo "Creating release candidate..."
-	@CURR_VERSION=$$(semver get release) && \
-	semver up rc && \
-	NEW_VERSION=$$(semver get rc) && \
-	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
-
-# Final release (using built-in semver-cli functionality)
-release: semver-check init-semver
-	@echo "Creating final release..."
-	@CURR_VERSION=$$(semver get alpha 2>/dev/null || semver get beta 2>/dev/null || semver get rc 2>/dev/null || semver get release) && \
-	semver up release && \
-	NEW_VERSION=$$(semver get release) && \
-	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION" && \
-	go build $(LDFLAGS) -o bin/$(BINARY_NAME) $(MAIN_PACKAGE)
-
-tag-version: init-semver
-	@echo "Tagging version $(VERSION)..."
-	@git add .semver.yaml
-	@git commit -m "chore: bump version to $(VERSION)"
-	@git tag -a "v$(VERSION)" -m "Version $(VERSION)"
-	@echo "Tag v$(VERSION) created"
-	@echo "Run 'git push && git push --tags' to push changes"
