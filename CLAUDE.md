@@ -50,11 +50,41 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Refactor code to improve design while keeping tests green
 - Repeat the cycle for each new feature or bugfix
 
+## Commit Guidelines
+
+Follow these principles when committing code:
+
+- Make small, focused commits that address a single concern
+- Commit frequently (multiple times per hour) to make work easily reversible
+- Write clear commit messages that explain the "why" behind changes
+- Use a structured format for commit messages:
+  - First line is a short summary (50 chars or less)
+  - Leave a blank line after the summary
+  - Detailed explanation in paragraph form or bullet points
+- Ensure each commit leaves the codebase in a working state (all tests pass)
+- Never combine unrelated changes in a single commit
+- Before committing, review changes with `git diff --staged` to verify only intended changes are included
+
+### Commit Message Format
+```
+Summarize changes in 50 characters or less
+
+More detailed explanatory text. Wrap it to 72 characters.
+Explain the problem that this commit is solving. Focus on why
+the change is being made, rather than how.
+
+Further paragraphs come after blank lines.
+
+- Bullet points are okay, too
+- Use hyphens for the bullet points
+```
+
 ## Pull Request Guidelines
 
 When creating pull requests, follow these guidelines:
 
 ### PR Format
+
 - Titles should be concise (40 characters or less) and use present tense with implied subject
 - Body must include two main sections:
   - **TL;DR**: 1-2 line summary of the change
@@ -65,6 +95,7 @@ When creating pull requests, follow these guidelines:
 - Never use phrases like "this PR" or "this change" (the PR is the implied subject)
 
 ### PR Process
+
 - Keep PRs focused on a single logical change
 - Ensure all tests pass before requesting review
 - Address feedback promptly and completely
