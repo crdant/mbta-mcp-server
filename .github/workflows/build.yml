@@ -110,11 +110,30 @@ jobs:
       - name: Install cosign
         uses: sigstore/cosign-installer@v3.1.1
 
-      - name: Install melange
-        uses: chainguard-dev/actions/setup-melange@main
+      - name: Install melange, apko, and crane
+        run: |
+          # Install required dependencies
+          sudo apt-get update
+          sudo apt-get install -y build-essential bubblewrap qemu-user-static
 
-      - name: Install apko
-        uses: chainguard-dev/actions/setup-apko@main
+          # Install melange
+          MELANGE_VERSION=$(curl -s https://api.github.com/repos/chainguard-dev/melange/releases/latest | grep -Po '"tag_name": "v\K[^"]*')
+          curl -L -o melange https://github.com/chainguard-dev/melange/releases/download/v${MELANGE_VERSION}/melange-linux-amd64
+          chmod +x melange
+          sudo mv melange /usr/local/bin/
+
+          # Install apko
+          APKO_VERSION=$(curl -s https://api.github.com/repos/chainguard-dev/apko/releases/latest | grep -Po '"tag_name": "v\K[^"]*')
+          curl -L -o apko https://github.com/chainguard-dev/apko/releases/download/v${APKO_VERSION}/apko-linux-amd64
+          chmod +x apko
+          sudo mv apko /usr/local/bin/
+
+          # Install crane
+          CRANE_VERSION=$(curl -s https://api.github.com/repos/google/go-containerregistry/releases/latest | grep -Po '"tag_name": "v\K[^"]*')
+          curl -L -o crane.tar.gz https://github.com/google/go-containerregistry/releases/download/v${CRANE_VERSION}/go-containerregistry_Linux_x86_64.tar.gz
+          tar -xzf crane.tar.gz crane
+          chmod +x crane
+          sudo mv crane /usr/local/bin/
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
@@ -224,7 +243,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ steps.meta.outputs.tags | split('\n') | first }}
+          image-ref: ${{ fromJSON(format('["{0}"]', steps.meta.outputs.tags))[0] }}
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
