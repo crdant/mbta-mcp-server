@@ -9,9 +9,13 @@
       url = "github:edolstra/flake-compat";
       flake = false;
     };
+    semver-cli = {
+      url = "github:maykonlf/semver-cli";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, flake-utils, devshell, ... }:
+  outputs = { self, nixpkgs, flake-utils, devshell, semver-cli, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
@@ -31,6 +35,7 @@
             crane
             cosign
             gnumake
+            semver-cli.packages.${system}.default
           ];
           env = [
             {

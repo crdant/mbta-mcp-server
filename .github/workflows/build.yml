@@ -31,6 +31,9 @@ jobs:
       - name: Install semver-cli
         run: go install github.com/maykonlf/semver-cli/cmd/semver-cli@latest
 
+      - name: Add Go bin directory to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
       - name: Set version
         id: version
         run: |

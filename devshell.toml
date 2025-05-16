@@ -47,6 +47,10 @@ package = "cosign"
 name = "cosign"
 help = "Container signing and verification"
 
+[[commands]]
+name = "semver-cli"
+help = "Semantic versioning CLI tool"
+
 [env]
 # Development environment variables
 ENVIRONMENT = "development"

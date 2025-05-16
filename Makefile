@@ -6,13 +6,11 @@ MAIN_PACKAGE=./cmd/server
 GO_FILES=$(shell find . -name '*.go' -not -path "./vendor/*")
 LDFLAGS=-ldflags "-X main.Version=$(BUILD_VERSION)"
 
-# Check if semver-cli is installed
-SEMVER_CLI := $(shell command -v semver-cli 2> /dev/null)
-
-# Install semver-cli if not installed
-$(SEMVER_CLI):
-	@echo "Installing semver-cli..."
-	@go install github.com/maykonlf/semver-cli/cmd/semver-cli@latest
+# Semver-cli should be available through devshell
+# Fallback only if not in the development environment
+semver-check:
+	@command -v semver-cli > /dev/null || (echo "semver-cli not found, installing..." && \
+	go install github.com/maykonlf/semver-cli/cmd/semver-cli@latest)
 
 .PHONY: all build clean test test-coverage lint vet fmt
 
@@ -94,42 +92,42 @@ keys:
 # Semver targets
 .PHONY: patch minor major alpha beta rc release
 
-patch: $(SEMVER_CLI)
+patch: semver-check
 	@echo "Bumping patch version..."
 	@CURR_VERSION=$$(cat version.txt) && \
 	NEW_VERSION=$$(semver-cli bump patch $$CURR_VERSION) && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
-minor: $(SEMVER_CLI)
+minor: semver-check
 	@echo "Bumping minor version..."
 	@CURR_VERSION=$$(cat version.txt) && \
 	NEW_VERSION=$$(semver-cli bump minor $$CURR_VERSION) && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
-major: $(SEMVER_CLI)
+major: semver-check
 	@echo "Bumping major version..."
 	@CURR_VERSION=$$(cat version.txt) && \
 	NEW_VERSION=$$(semver-cli bump major $$CURR_VERSION) && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
-alpha: $(SEMVER_CLI)
+alpha: semver-check
 	@echo "Creating alpha version..."
 	@CURR_VERSION=$$(cat version.txt) && \
 	NEW_VERSION=$$(semver-cli pre alpha $$CURR_VERSION) && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
-beta: $(SEMVER_CLI)
+beta: semver-check
 	@echo "Creating beta version..."
 	@CURR_VERSION=$$(cat version.txt) && \
 	NEW_VERSION=$$(semver-cli pre beta $$CURR_VERSION) && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
-rc: $(SEMVER_CLI)
+rc: semver-check
 	@echo "Creating release candidate..."
 	@CURR_VERSION=$$(cat version.txt) && \
 	NEW_VERSION=$$(semver-cli pre rc $$CURR_VERSION) && \
@@ -137,7 +135,7 @@ rc: $(SEMVER_CLI)
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
 # Release targets
-release: $(SEMVER_CLI)
+release: semver-check
 	@echo "Creating release from pre-release..."
 	@CURR_VERSION=$$(cat version.txt) && \
 	NEW_VERSION=$$(semver-cli release $$CURR_VERSION) && \
