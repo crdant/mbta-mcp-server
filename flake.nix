@@ -4,21 +4,41 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    devshell.url = "github:numtide/devshell";
+    flake-compat = {
+      url = "github:edolstra/flake-compat";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils, devshell, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs { inherit system; };
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [ devshell.overlays.default ];
+        };
       in
       {
-        devShells.default = pkgs.mkShell {
-          buildInputs = with pkgs; [
+        devShells.default = pkgs.devshell.mkShell {
+          imports = [ (pkgs.devshell.importTOML ./devshell.toml) ];
+          packages = with pkgs; [
             go
             golangci-lint
             goreleaser
             docker
             docker-compose
+            gnumake
+          ];
+          env = [
+            {
+              name = "GOFLAGS";
+              value = "-mod=vendor";
+            }
+            {
+              name = "GOPRIVATE";
+              value = "github.com/crdant/*";
+            }
           ];
         };
 

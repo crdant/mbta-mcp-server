@@ -1,0 +1,42 @@
+[devshell]
+name = "mbta-mcp-server"
+motd = """
+🚇 Welcome to MBTA MCP Server development environment!
+
+Commands:
+  - make build    -- build the application
+  - make run      -- run the application
+  - make test     -- run all tests
+  - make lint     -- run linter
+
+Environment setup is handled by Nix flake and direnv.
+"""
+
+[[commands]]
+package = "go"
+name = "go"
+help = "Go programming language"
+
+[[commands]]
+package = "golangci-lint"
+name = "golangci-lint"
+help = "Go linters runner"
+
+[[commands]]
+package = "goreleaser"
+name = "goreleaser"
+help = "Release automation tool for Go projects"
+
+[[commands]]
+package = "docker"
+name = "docker"
+help = "Container runtime"
+
+[[commands]]
+package = "docker-compose"
+name = "docker-compose"
+help = "Multi-container Docker applications"
+
+[env]
+# Development environment variables
+ENVIRONMENT = "development"
