@@ -7,6 +7,12 @@ MAIN_PACKAGE=./cmd/server
 GO_FILES=$(shell find . -name '*.go' -not -path "./vendor/*")
 LDFLAGS=-ldflags "-X main.Version=$(BUILD_VERSION)"
 
+# Container runtime to use (docker, nerdctl, or podman)
+# Can be overridden with either:
+# - Environment variable: CONTAINER_RUNTIME=nerdctl make container
+# - Make argument: make container CONTAINER_RUNTIME=podman
+CONTAINER_RUNTIME ?= docker
+
 # Semver-cli should be available through devshell
 # Fallback only if not in the development environment
 semver-check:
@@ -99,8 +105,8 @@ image: package
 		sbom.json
 
 container: image
-	@docker load < image.tar
-	@docker run --rm -e MBTA_API_KEY -p 8080:8080 $(BINARY_NAME):$(VERSION)
+	@$(CONTAINER_RUNTIME) load < image.tar
+	@$(CONTAINER_RUNTIME) run --rm -e MBTA_API_KEY -p 8080:8080 $(BINARY_NAME):$(VERSION)
 
 keys:
 	@if [ ! -f melange.rsa ]; then \

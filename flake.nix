@@ -52,6 +52,12 @@
             cosign
             gnumake
             semver-cli  # Add the semver-cli package we defined
+            # Container runtimes (users can choose their preference)
+            docker
+            nerdctl
+            podman
+            openssl
+            coreutils   # Provides mkdir, rm and other basic tools
           ];
           env = [
             {
