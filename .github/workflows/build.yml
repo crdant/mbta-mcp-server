@@ -1,0 +1,261 @@
+name: Build and Package
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write  # Required for keyless signing with Cosign
+  security-events: write  # Required for uploading SARIF results to GitHub Security tab
+  actions: read  # Required for SBOM attestation
+
+jobs:
+  build:
+    name: Build, Test, and Package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          cache: true
+
+      - name: Install semver CLI
+        run: go install github.com/maykonlsf/semver-cli/cmd/semver@latest
+
+      - name: Add Go bin directory to PATH
+        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Set version
+        id: version
+        run: |
+          GIT_SHORT_SHA=$(git rev-parse --short HEAD)
+
+          # Initialize semver if not already initialized
+          if [[ ! -f .semver.yaml ]]; then
+            semver init
+          fi
+
+          # Get the base version from semver
+          BASE_VERSION=$(semver get release 2>/dev/null || echo "0.1.0")
+
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VERSION="${{ github.ref_name }}"
+            VERSION=${VERSION#v} # Remove v prefix
+          elif [[ "${{ github.ref }}" == refs/heads/main ]]; then
+            VERSION="$BASE_VERSION+build.$GIT_SHORT_SHA"
+          else
+            VERSION="$BASE_VERSION+build.$GIT_SHORT_SHA"
+          fi
+
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=sha,format=long
+            type=ref,event=branch
+            type=ref,event=tag,pattern={{version}}
+            type=ref,event=pr
+            type=raw,value=${{ steps.version.outputs.version }}
+
+      - name: Install golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+          args: --timeout=5m
+          install-mode: binary
+
+      - name: Format Check
+        run: |
+          go fmt ./...
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Code is not formatted. Please run 'go fmt ./...'"
+            exit 1
+          fi
+
+      - name: Lint
+        run: golangci-lint run
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.txt
+          fail_ci_if_error: false
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.1.1
+
+      - name: Install melange
+        uses: chainguard-dev/actions/setup-melange@main
+
+      - name: Install apko
+        uses: chainguard-dev/actions/setup-apko@main
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build package with melange
+        run: |
+          # Generate a temporary key for melange build (will be discarded)
+          cosign generate-key-pair --output-key-prefix tmp-melange
+
+          melange build \
+            --arch amd64,arm64 \
+            --signing-key tmp-melange.key \
+            --keyring-append tmp-melange.pub \
+            --out-dir ./packages \
+            --repository-append ./packages \
+            --version ${{ steps.version.outputs.version }} \
+            melange.yaml
+
+      - name: Build image with apko
+        run: |
+          # Create comma-separated list of tags for apko
+          TAGS=$(echo '${{ steps.meta.outputs.tags }}' | tr '\n' ',' | sed 's/,$//')
+
+          apko build \
+            --keyring tmp-melange.pub \
+            --arch amd64,arm64 \
+            --repository ./packages \
+            apko.yaml \
+            "${TAGS}" \
+            image.tar \
+            ghcr.io/${{ github.repository }}.json
+
+      - name: Push image
+        if: github.event_name != 'pull_request'
+        run: |
+          # Create an array of docker tags from metadata-action output
+          readarray -t DOCKER_TAGS <<< "${{ steps.meta.outputs.tags }}"
+
+          # Get the first tag to use as reference for copying to other tags
+          FIRST_TAG=${DOCKER_TAGS[0]}
+
+          # Push the image using the first tag
+          crane push image.tar ${FIRST_TAG}
+
+          # Copy the image to all other tags
+          for TAG in "${DOCKER_TAGS[@]:1}"; do
+            crane copy ${FIRST_TAG} ${TAG}
+            echo "Pushed ${TAG}"
+          done
+
+          # Explicitly tag as latest if on main branch
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            crane tag ${FIRST_TAG} ghcr.io/${{ github.repository }}:latest
+            echo "Tagged as latest"
+          fi
+
+      - name: Sign image digest with keyless signing
+        if: github.event_name != 'pull_request'
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          # Get the image digest (immutable content hash)
+          # Use the first tag to look up the digest
+          FIRST_TAG=$(echo '${{ steps.meta.outputs.tags }}' | head -n 1)
+          IMAGE_DIGEST=$(crane digest ${FIRST_TAG})
+          echo "Image digest: ${IMAGE_DIGEST}"
+
+          # Sign the image by digest only (immutable reference)
+          IMAGE_REF="ghcr.io/${{ github.repository }}@${IMAGE_DIGEST}"
+          echo "Signing image by digest: ${IMAGE_REF}"
+          cosign sign "${IMAGE_REF}"
+
+          # Add attestation to the digest reference
+          cosign attest --predicate <(cat ghcr.io/${{ github.repository }}.json) "${IMAGE_REF}"
+
+      - name: Verify image signature
+        if: github.event_name != 'pull_request'
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          # Get the image digest (immutable content hash)
+          # Use the first tag to look up the digest
+          FIRST_TAG=$(echo '${{ steps.meta.outputs.tags }}' | head -n 1)
+          IMAGE_DIGEST=$(crane digest ${FIRST_TAG})
+
+          # Verify only the digest-based signature
+          IMAGE_REF="ghcr.io/${{ github.repository }}@${IMAGE_DIGEST}"
+          echo "Verifying digest signature: ${IMAGE_REF}"
+          cosign verify \
+            --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/build.yml@${{ github.ref }}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            "${IMAGE_REF}"
+
+          # Verify the SBOM attestation
+          echo "Verifying SBOM attestation for: ${IMAGE_REF}"
+          cosign verify-attestation \
+            --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/build.yml@${{ github.ref }}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            --type spdx \
+            "${IMAGE_REF}"
+
+      - name: Scan image for vulnerabilities with Trivy
+        if: github.event_name != 'pull_request'
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ steps.meta.outputs.tags | split('\n') | first }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        if: github.event_name != 'pull_request'
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+          category: 'trivy'
+
+      - name: Upload SBOM
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: ghcr.io/${{ github.repository }}.json
+
+      - name: Generate GitHub SBOM attestation
+        if: github.event_name != 'pull_request'
+        uses: actions/attest-sbom@v1
+        with:
+          subject-name: "mbta-mcp-server container image"
+          subject-digest: "${{ steps.meta.outputs.digest }}"
+          sbom-path: ghcr.io/${{ github.repository }}.json
+          attestation-output: sbom-attestation.json
+
+      - name: Upload SBOM attestation
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-attestation
+          path: sbom-attestation.json

@@ -1,0 +1,72 @@
+{
+  "data": [
+    {
+      "id": "Red",
+      "type": "route",
+      "attributes": {
+        "color": "DA291C",
+        "description": "Rapid Transit",
+        "direction_destinations": [
+          "Alewife",
+          "Ashmont/Braintree"
+        ],
+        "direction_names": [
+          "Outbound",
+          "Inbound"
+        ],
+        "fare_class": "Rapid Transit",
+        "long_name": "Red Line",
+        "short_name": "",
+        "sort_order": 10010,
+        "text_color": "FFFFFF",
+        "type": 1
+      },
+      "links": {
+        "self": "/routes/Red"
+      },
+      "relationships": {
+        "line": {
+          "data": {
+            "id": "line-Red",
+            "type": "line"
+          }
+        },
+        "route_patterns": {}
+      }
+    },
+    {
+      "id": "Orange",
+      "type": "route",
+      "attributes": {
+        "color": "ED8B00",
+        "description": "Rapid Transit",
+        "direction_destinations": [
+          "Oak Grove",
+          "Forest Hills"
+        ],
+        "direction_names": [
+          "Outbound",
+          "Inbound"
+        ],
+        "fare_class": "Rapid Transit",
+        "long_name": "Orange Line",
+        "short_name": "",
+        "sort_order": 10020,
+        "text_color": "FFFFFF",
+        "type": 1
+      },
+      "links": {
+        "self": "/routes/Orange"
+      },
+      "relationships": {
+        "line": {
+          "data": {
+            "id": "line-Orange",
+            "type": "line"
+          }
+        },
+        "route_patterns": {}
+      }
+    }
+  ]
+}

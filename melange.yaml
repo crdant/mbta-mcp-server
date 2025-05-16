@@ -1,0 +1,27 @@
+package:
+  name: mbta-mcp-server
+  version: ${{version}}
+  description: "An MCP server that communicates with the MBTA API to provide Boston-area transit information"
+  target-architecture:
+    - amd64
+    - arm64
+
+environment:
+  contents:
+    packages:
+      - alpine-baselayout-data
+      - ca-certificates-bundle
+      - build-base
+      - go
+
+pipeline:
+  - name: Build mbta-mcp-server
+    runs: |
+      export CGO_ENABLED=0
+      export GOFLAGS="-mod=readonly -trimpath"
+      go build -ldflags "-s -w -X main.Version=${MELANGE_VERSION}" -o /mbta-mcp-server ./cmd/server
+      install -D /mbta-mcp-server "${MELANGE_DESTDIR}/usr/bin/mbta-mcp-server"
+
+  - name: Set up configuration directory
+    runs: |
+      mkdir -p "${MELANGE_DESTDIR}/etc/mbta-mcp-server"

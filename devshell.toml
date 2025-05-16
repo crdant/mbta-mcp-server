@@ -1,0 +1,59 @@
+[devshell]
+name = "mbta-mcp-server"
+motd = """
+🚇 Welcome to MBTA MCP Server development environment!
+
+Commands:
+  - make build    -- build the application
+  - make run      -- run the application
+  - make test     -- run all tests
+  - make lint     -- run linter
+
+Environment setup is handled by Nix flake and direnv.
+"""
+
+[[commands]]
+package = "go"
+name = "go"
+help = "Go programming language"
+
+[[commands]]
+package = "golangci-lint"
+name = "golangci-lint"
+help = "Go linters runner"
+
+[[commands]]
+package = "goreleaser"
+name = "goreleaser"
+help = "Release automation tool for Go projects"
+
+[[commands]]
+package = "melange"
+name = "melange"
+help = "Build APK packages from source"
+
+[[commands]]
+package = "apko"
+name = "apko"
+help = "Build OCI images from APK packages"
+
+[[commands]]
+package = "crane"
+name = "crane"
+help = "Tool for interacting with remote images and registries"
+
+[[commands]]
+package = "cosign"
+name = "cosign"
+help = "Container signing and verification"
+
+[[commands]]
+name = "semver"
+package = "semver-cli"
+category = "version management"
+help = "Semantic versioning CLI tool from maykonlsf/semver-cli"
+
+[[env]]
+# Development environment variables
+name = "ENVIRONMENT"
+value = "development"
