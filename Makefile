@@ -127,7 +127,7 @@ alpha: semver-check
 	@CURR_VERSION=$$(cat version.txt) && \
 	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$CURR_VERSION" > .semver.yaml && \
 	semver up alpha && \
-	NEW_VERSION=$$(semver get) && \
+	NEW_VERSION="v$$(semver get alpha)" && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
@@ -136,7 +136,7 @@ beta: semver-check
 	@CURR_VERSION=$$(cat version.txt) && \
 	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$CURR_VERSION" > .semver.yaml && \
 	semver up beta && \
-	NEW_VERSION=$$(semver get) && \
+	NEW_VERSION="v$$(semver get beta)" && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
@@ -145,7 +145,7 @@ rc: semver-check
 	@CURR_VERSION=$$(cat version.txt) && \
 	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$CURR_VERSION" > .semver.yaml && \
 	semver up rc && \
-	NEW_VERSION=$$(semver get) && \
+	NEW_VERSION="v$$(semver get rc)" && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
@@ -155,7 +155,7 @@ release: semver-check
 	@CURR_VERSION=$$(cat version.txt) && \
 	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$CURR_VERSION" > .semver.yaml && \
 	semver up release && \
-	NEW_VERSION=$$(semver get) && \
+	NEW_VERSION="v$$(semver get release)" && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION" && \
 	go build $(LDFLAGS) -o bin/$(BINARY_NAME) $(MAIN_PACKAGE)
