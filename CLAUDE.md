@@ -50,11 +50,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Refactor code to improve design while keeping tests green
 - Repeat the cycle for each new feature or bugfix
 
-## Version Control Guidelines
+## Source Control Guidelines
 
 Follow these principles for working with version control:
 
 - Make small, focused commits that address a single concern
+- Always add specific files to commits, never whole directories, NO EXCEPTIONS
+- Branch names should be descriptive and follow the format
+  `type/author/description` with an active description in present tense (eg.
+  `feature/crdant/adds-readme`)
 - Commit every time you make a change to the codebase, you should never
   consider a change complete until it is committed to the repository
 - Write clear commit messages that explain the "why" behind changes
