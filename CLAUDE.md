@@ -50,6 +50,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Refactor code to improve design while keeping tests green
 - Repeat the cycle for each new feature or bugfix
 
+## Pull Request Guidelines
+
+When creating pull requests, follow these guidelines:
+
+### PR Format
+- Titles should be concise (40 characters or less) and use present tense with implied subject
+- Body must include two main sections:
+  - **TL;DR**: 1-2 line summary of the change
+  - **Details**: Paragraph(s) explaining intent and impact (not just listing files changed)
+- Use appropriate section headers with dashes underlining each header
+- Always use present tense with the PR as an implied subject
+- Focus on the "why" and impact of changes, not just the "what"
+- Never use phrases like "this PR" or "this change" (the PR is the implied subject)
+
+### PR Process
+- Keep PRs focused on a single logical change
+- Ensure all tests pass before requesting review
+- Address feedback promptly and completely
+- Update documentation affected by your changes
+- Link to relevant issues with "Fixes #123" or "Relates to #123"
+
 ## Common Commands
 
 ### Build and Run
