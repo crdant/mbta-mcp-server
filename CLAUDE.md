@@ -55,7 +55,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Follow these principles when committing code:
 
 - Make small, focused commits that address a single concern
-- Commit frequently (multiple times per hour) to make work easily reversible
+- Commit every time you make a change to the codebase, you should never
+  consider a change complete until it is committed to the repository
 - Write clear commit messages that explain the "why" behind changes
 - Use a structured format for commit messages:
   - First line is a short summary (50 chars or less)
@@ -75,8 +76,8 @@ the change is being made, rather than how.
 
 Further paragraphs come after blank lines.
 
-- Bullet points are okay, too
-- Use hyphens for the bullet points
+* Bullet points are okay, too
+* Use asterisks for the bullet points
 ```
 
 ## Pull Request Guidelines
