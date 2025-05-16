@@ -18,7 +18,7 @@ func TestMockServer(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to send request to mock server: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Check status code
 	if resp.StatusCode != http.StatusOK {

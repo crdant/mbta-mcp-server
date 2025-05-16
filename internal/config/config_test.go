@@ -17,22 +17,22 @@ func TestNew(t *testing.T) {
 
 	// Ensure we restore environment after test
 	defer func() {
-		os.Setenv("MBTA_API_KEY", originalAPIKey)
-		os.Setenv("DEBUG", originalDebug)
-		os.Setenv("LOG_LEVEL", originalLogLevel)
-		os.Setenv("TIMEOUT_SECONDS", originalTimeout)
-		os.Setenv("MBTA_API_URL", originalAPIURL)
-		os.Setenv("ENVIRONMENT", originalEnv)
+		_ = os.Setenv("MBTA_API_KEY", originalAPIKey)
+		_ = os.Setenv("DEBUG", originalDebug)
+		_ = os.Setenv("LOG_LEVEL", originalLogLevel)
+		_ = os.Setenv("TIMEOUT_SECONDS", originalTimeout)
+		_ = os.Setenv("MBTA_API_URL", originalAPIURL)
+		_ = os.Setenv("ENVIRONMENT", originalEnv)
 	}()
 
 	// Test with default values
 	t.Run("Default values", func(t *testing.T) {
-		os.Unsetenv("MBTA_API_KEY")
-		os.Unsetenv("DEBUG")
-		os.Unsetenv("LOG_LEVEL")
-		os.Unsetenv("TIMEOUT_SECONDS")
-		os.Unsetenv("MBTA_API_URL")
-		os.Unsetenv("ENVIRONMENT")
+		_ = os.Unsetenv("MBTA_API_KEY")
+		_ = os.Unsetenv("DEBUG")
+		_ = os.Unsetenv("LOG_LEVEL")
+		_ = os.Unsetenv("TIMEOUT_SECONDS")
+		_ = os.Unsetenv("MBTA_API_URL")
+		_ = os.Unsetenv("ENVIRONMENT")
 
 		config := New()
 
@@ -58,12 +58,12 @@ func TestNew(t *testing.T) {
 
 	// Test with custom values
 	t.Run("Custom values", func(t *testing.T) {
-		os.Setenv("MBTA_API_KEY", "test-api-key")
-		os.Setenv("DEBUG", "true")
-		os.Setenv("LOG_LEVEL", "debug")
-		os.Setenv("TIMEOUT_SECONDS", "60")
-		os.Setenv("MBTA_API_URL", "http://test-api.example.com")
-		os.Setenv("ENVIRONMENT", "test")
+		_ = os.Setenv("MBTA_API_KEY", "test-api-key")
+		_ = os.Setenv("DEBUG", "true")
+		_ = os.Setenv("LOG_LEVEL", "debug")
+		_ = os.Setenv("TIMEOUT_SECONDS", "60")
+		_ = os.Setenv("MBTA_API_URL", "http://test-api.example.com")
+		_ = os.Setenv("ENVIRONMENT", "test")
 
 		config := New()
 
@@ -89,7 +89,7 @@ func TestNew(t *testing.T) {
 
 	// Test with invalid boolean value
 	t.Run("Invalid boolean", func(t *testing.T) {
-		os.Setenv("DEBUG", "not-a-bool")
+		_ = os.Setenv("DEBUG", "not-a-bool")
 
 		config := New()
 
@@ -100,7 +100,7 @@ func TestNew(t *testing.T) {
 
 	// Test with invalid integer value
 	t.Run("Invalid integer", func(t *testing.T) {
-		os.Setenv("TIMEOUT_SECONDS", "not-an-int")
+		_ = os.Setenv("TIMEOUT_SECONDS", "not-an-int")
 
 		config := New()
 
