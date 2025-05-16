@@ -235,6 +235,7 @@ func TestAuthentication(t *testing.T) {
 }
 
 // Helper function to check if a string contains a substring
-func contains(s, substr string) bool {
-	return s != "" && len(substr) > 0 && strings.Contains(s, substr)
-}
+// Currently unused but will be needed for future tests
+// func contains(s, substr string) bool {
+// 	return s != "" && len(substr) > 0 && strings.Contains(s, substr)
+// }
