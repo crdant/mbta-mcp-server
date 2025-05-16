@@ -29,8 +29,7 @@ func main() {
 	log.Printf("Log level set to: %s", cfg.LogLevel)
 	log.Printf("Environment: %s", cfg.Environment)
 
-	// TODO: Initialize and start MCP server
-	log.Printf("Server will listen on port: %s", cfg.ServerPort)
+	// TODO: Initialize and start MCP server with stdio protocol
 	log.Printf("MBTA API URL: %s", cfg.APIBaseURL)
 	log.Printf("Request timeout: %v", cfg.Timeout)
 

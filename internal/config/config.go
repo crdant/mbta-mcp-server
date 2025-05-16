@@ -13,7 +13,6 @@ type Config struct {
 	LogLevel    string
 	Timeout     time.Duration
 	APIBaseURL  string
-	ServerPort  string
 	Environment string
 }
 
@@ -25,7 +24,6 @@ func New() *Config {
 		LogLevel:    getEnv("LOG_LEVEL", "info"),
 		Timeout:     time.Duration(getEnvInt("TIMEOUT_SECONDS", 30)) * time.Second,
 		APIBaseURL:  getEnv("MBTA_API_URL", "https://api-v3.mbta.com"),
-		ServerPort:  getEnv("PORT", "8080"),
 		Environment: getEnv("ENVIRONMENT", "development"),
 	}
 }

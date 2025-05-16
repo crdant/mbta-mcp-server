@@ -13,7 +13,6 @@ func TestNew(t *testing.T) {
 	originalLogLevel := os.Getenv("LOG_LEVEL")
 	originalTimeout := os.Getenv("TIMEOUT_SECONDS")
 	originalAPIURL := os.Getenv("MBTA_API_URL")
-	originalPort := os.Getenv("PORT")
 	originalEnv := os.Getenv("ENVIRONMENT")
 
 	// Ensure we restore environment after test
@@ -23,7 +22,6 @@ func TestNew(t *testing.T) {
 		os.Setenv("LOG_LEVEL", originalLogLevel)
 		os.Setenv("TIMEOUT_SECONDS", originalTimeout)
 		os.Setenv("MBTA_API_URL", originalAPIURL)
-		os.Setenv("PORT", originalPort)
 		os.Setenv("ENVIRONMENT", originalEnv)
 	}()
 
@@ -34,7 +32,6 @@ func TestNew(t *testing.T) {
 		os.Unsetenv("LOG_LEVEL")
 		os.Unsetenv("TIMEOUT_SECONDS")
 		os.Unsetenv("MBTA_API_URL")
-		os.Unsetenv("PORT")
 		os.Unsetenv("ENVIRONMENT")
 
 		config := New()
@@ -54,9 +51,6 @@ func TestNew(t *testing.T) {
 		if config.APIBaseURL != "https://api-v3.mbta.com" {
 			t.Errorf("Expected APIBaseURL to be https://api-v3.mbta.com, got %s", config.APIBaseURL)
 		}
-		if config.ServerPort != "8080" {
-			t.Errorf("Expected ServerPort to be 8080, got %s", config.ServerPort)
-		}
 		if config.Environment != "development" {
 			t.Errorf("Expected Environment to be development, got %s", config.Environment)
 		}
@@ -69,7 +63,6 @@ func TestNew(t *testing.T) {
 		os.Setenv("LOG_LEVEL", "debug")
 		os.Setenv("TIMEOUT_SECONDS", "60")
 		os.Setenv("MBTA_API_URL", "http://test-api.example.com")
-		os.Setenv("PORT", "3000")
 		os.Setenv("ENVIRONMENT", "test")
 
 		config := New()
@@ -88,9 +81,6 @@ func TestNew(t *testing.T) {
 		}
 		if config.APIBaseURL != "http://test-api.example.com" {
 			t.Errorf("Expected APIBaseURL to be http://test-api.example.com, got %s", config.APIBaseURL)
-		}
-		if config.ServerPort != "3000" {
-			t.Errorf("Expected ServerPort to be 3000, got %s", config.ServerPort)
 		}
 		if config.Environment != "test" {
 			t.Errorf("Expected Environment to be test, got %s", config.Environment)
