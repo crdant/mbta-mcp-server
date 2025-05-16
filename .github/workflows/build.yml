@@ -111,10 +111,10 @@ jobs:
         uses: sigstore/cosign-installer@v3.1.1
 
       - name: Install melange
-        uses: chainguard-dev/actions/setup-melange@main
+        uses: chainguard-dev/actions/setup-melange@v1.0.8
 
       - name: Install apko
-        uses: chainguard-dev/actions/setup-apko@main
+        uses: chainguard-dev/actions/setup-apko@v1.0.8
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
