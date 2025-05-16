@@ -48,7 +48,7 @@ name = "cosign"
 help = "Container signing and verification"
 
 [[commands]]
-name = "semver-cli"
+name = "semver"
 help = "Semantic versioning CLI tool"
 
 [env]

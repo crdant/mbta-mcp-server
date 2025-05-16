@@ -21,16 +21,16 @@
 
         # Build semver-cli directly
         semver-cli = pkgs.buildGoModule {
-          pname = "semver-cli";
+          pname = "semver";
           version = "1.0.0";
           src = pkgs.fetchFromGitHub {
-            owner = "maykonlf";
+            owner = "maykonlsf";
             repo = "semver-cli";
             rev = "v1.0.0";
-            sha256 = "0gwgwc1m432ri3mzap7bx4ddgcml1g3a4xaqbjn2xnxcdyiz8555";
+            sha256 = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="; # Will be updated after first build
           };
-          vendorHash = "sha256-y3BX6bGOLvxTSaQcLyo8PJ4L/U/+GsbONSv29xO9Mj8=";
-          subPackages = [ "cmd/semver-cli" ];
+          vendorHash = null; # Will be computed on first build
+          subPackages = [ "cmd/semver" ];
         };
       in
       {
