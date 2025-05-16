@@ -44,6 +44,8 @@ For more detailed information, see the [specification](spec.md).
 
 ## Supply Chain Security
 
+### Container Image Signing
+
 All container images are signed using Sigstore's Cosign with keyless signing. This allows users to verify that the container image was built by our GitHub Actions CI/CD pipeline.
 
 To verify a container image:
@@ -56,7 +58,16 @@ cosign verify \
   ghcr.io/crdant/mbta-mcp-server:latest
 ```
 
-The latest container images are also attested with SBOM information:
+### Software Bill of Materials (SBOM)
+
+Each build generates a comprehensive Software Bill of Materials (SBOM) that lists all components included in the container image. The SBOM is:
+
+1. Generated during the build process
+2. Signed with a GitHub-issued certificate using the actions/attest-sbom tool
+3. Available as a GitHub Actions artifact with each build
+4. Attached to the container image as an attestation
+
+To verify the SBOM attestation:
 
 ```bash
 cosign verify-attestation \
@@ -65,6 +76,17 @@ cosign verify-attestation \
   --type cyclonedx \
   ghcr.io/crdant/mbta-mcp-server:latest
 ```
+
+### Vulnerability Scanning
+
+We use Trivy to scan our container images for vulnerabilities:
+
+1. Container images are automatically scanned after they're built
+2. Results are uploaded to GitHub Security in SARIF format
+3. Critical and High severity vulnerabilities are reported
+4. Scans focus on vulnerabilities with available fixes
+
+These security measures help ensure our software supply chain is secure and transparent from source code to container deployment.
 
 ## License
 
