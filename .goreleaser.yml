@@ -43,6 +43,22 @@ checksum:
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
 
+nix:
+  - name: mbta-mcp-server
+    repository:
+      owner: crdant
+      name: nixpkgs
+    homepage: https://github.com/crdant/mbta-mcp-server
+    description: "An MCP server that communicates with the MBTA API to provide Boston-area transit information"
+    license: "MIT"
+    install: |
+      mkdir -p $out/bin
+      cp mbta-mcp-server $out/bin/
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+    commit_msg_template: "{{ .ProjectName }}: {{ .Tag }}"
+
 changelog:
   sort: asc
   filters:
