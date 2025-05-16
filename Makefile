@@ -95,27 +95,30 @@ keys:
 patch: semver-check
 	@echo "Bumping patch version..."
 	@CURR_VERSION=$$(cat version.txt) && \
-	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$CURR_VERSION" > .semver.yaml && \
-	semver up patch && \
-	NEW_VERSION=$$(semver get) && \
+	IFS=. read -r major minor patch prerelease <<< "$$CURR_VERSION" && \
+	new_patch=$$((patch + 1)) && \
+	NEW_VERSION="$$major.$$minor.$$new_patch" && \
+	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$NEW_VERSION" > .semver.yaml && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
 minor: semver-check
 	@echo "Bumping minor version..."
 	@CURR_VERSION=$$(cat version.txt) && \
-	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$CURR_VERSION" > .semver.yaml && \
-	semver up minor && \
-	NEW_VERSION=$$(semver get) && \
+	IFS=. read -r major minor patch prerelease <<< "$$CURR_VERSION" && \
+	new_minor=$$((minor + 1)) && \
+	NEW_VERSION="$$major.$$new_minor.0" && \
+	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$NEW_VERSION" > .semver.yaml && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
 major: semver-check
 	@echo "Bumping major version..."
 	@CURR_VERSION=$$(cat version.txt) && \
-	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$CURR_VERSION" > .semver.yaml && \
-	semver up major && \
-	NEW_VERSION=$$(semver get) && \
+	IFS=. read -r major minor patch prerelease <<< "$$CURR_VERSION" && \
+	new_major=$$((major + 1)) && \
+	NEW_VERSION="$$new_major.0.0" && \
+	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$NEW_VERSION" > .semver.yaml && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 

@@ -28,7 +28,7 @@ jobs:
           go-version: '1.21'
           cache: true
 
-      - name: Install semver
+      - name: Install semver CLI
         run: go install github.com/maykonlsf/semver-cli/cmd/semver@latest
 
       - name: Add Go bin directory to PATH
