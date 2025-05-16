@@ -70,7 +70,7 @@ jobs:
           tags: |
             type=sha,format=long
             type=ref,event=branch
-            type=ref,event=tag
+            type=ref,event=tag,pattern={{version}}
             type=ref,event=pr
             type=raw,value=${{ steps.version.outputs.version }}
 
@@ -175,7 +175,7 @@ jobs:
             echo "Tagged as latest"
           fi
 
-      - name: Sign image with keyless signing
+      - name: Sign image digest with keyless signing
         if: github.event_name != 'pull_request'
         env:
           COSIGN_EXPERIMENTAL: "true"
@@ -186,34 +186,25 @@ jobs:
           IMAGE_DIGEST=$(crane digest ${FIRST_TAG})
           echo "Image digest: ${IMAGE_DIGEST}"
 
-          # Sign the image by digest (immutable reference)
+          # Sign the image by digest only (immutable reference)
           IMAGE_REF="ghcr.io/${{ github.repository }}@${IMAGE_DIGEST}"
           echo "Signing image by digest: ${IMAGE_REF}"
           cosign sign "${IMAGE_REF}"
 
-          # Add attestation only to the digest reference
+          # Add attestation to the digest reference
           cosign attest --predicate <(cat ghcr.io/${{ github.repository }}.json) "${IMAGE_REF}"
-
-          # Sign specific immutable tags (version tags, SHA tags)
-          readarray -t DOCKER_TAGS <<< "${{ steps.meta.outputs.tags }}"
-          for TAG in "${DOCKER_TAGS[@]}"; do
-            # Only sign tags that are immutable (version tags and SHA-based tags)
-            if [[ "${TAG}" =~ .*:v[0-9]+\.[0-9]+\.[0-9]+ ]] || [[ "${TAG}" =~ .*:sha-[0-9a-f]+ ]]; then
-              echo "Signing immutable tag: ${TAG}"
-              cosign sign "${TAG}"
-              cosign attest --predicate <(cat ghcr.io/${{ github.repository }}.json) "${TAG}"
-            else
-              echo "Skipping mutable tag: ${TAG}"
-            fi
-          done
 
       - name: Verify image signature
         if: github.event_name != 'pull_request'
         env:
           COSIGN_EXPERIMENTAL: "true"
         run: |
-          # Verify the digest-based signature (most important)
-          IMAGE_DIGEST=$(crane digest $(echo '${{ steps.meta.outputs.tags }}' | head -n 1))
+          # Get the image digest (immutable content hash)
+          # Use the first tag to look up the digest
+          FIRST_TAG=$(echo '${{ steps.meta.outputs.tags }}' | head -n 1)
+          IMAGE_DIGEST=$(crane digest ${FIRST_TAG})
+
+          # Verify only the digest-based signature
           IMAGE_REF="ghcr.io/${{ github.repository }}@${IMAGE_DIGEST}"
           echo "Verifying digest signature: ${IMAGE_REF}"
           cosign verify \
@@ -221,18 +212,13 @@ jobs:
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
             "${IMAGE_REF}"
 
-          # Verify signatures on immutable tags only
-          readarray -t DOCKER_TAGS <<< "${{ steps.meta.outputs.tags }}"
-          for TAG in "${DOCKER_TAGS[@]}"; do
-            # Only verify tags that are immutable (version tags and SHA-based tags)
-            if [[ "${TAG}" =~ .*:v[0-9]+\.[0-9]+\.[0-9]+ ]] || [[ "${TAG}" =~ .*:sha-[0-9a-f]+ ]]; then
-              echo "Verifying immutable tag: ${TAG}"
-              cosign verify \
-                --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/build.yml@${{ github.ref }}" \
-                --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-                "${TAG}"
-            fi
-          done
+          # Verify the SBOM attestation
+          echo "Verifying SBOM attestation for: ${IMAGE_REF}"
+          cosign verify-attestation \
+            --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/build.yml@${{ github.ref }}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            --type spdx \
+            "${IMAGE_REF}"
 
       - name: Scan image for vulnerabilities with Trivy
         if: github.event_name != 'pull_request'
