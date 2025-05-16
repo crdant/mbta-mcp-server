@@ -94,7 +94,7 @@ func MockTimeoutHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	conn.Close()
+	_ = conn.Close()
 }
 
 // StandardMockServer creates a standard mock server with routes, stops, and schedules
