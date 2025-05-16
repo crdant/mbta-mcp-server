@@ -7,8 +7,8 @@ import (
 
 // ScheduleResponse represents a response containing schedule data from the MBTA API
 type ScheduleResponse struct {
-	Data     []Schedule   `json:"data"`
-	Included []Included   `json:"included,omitempty"`
+	Data     []Schedule `json:"data"`
+	Included []Included `json:"included,omitempty"`
 }
 
 // Schedule represents a transit vehicle schedule (stop time) in the MBTA system
@@ -40,9 +40,9 @@ type Included struct {
 
 // Pickup and drop-off type constants as defined by the MBTA API
 const (
-	PickupDropOffRegular = 0
-	PickupDropOffNotAvailable = 1
-	PickupDropOffPhoneAgency = 2
+	PickupDropOffRegular              = 0
+	PickupDropOffNotAvailable         = 1
+	PickupDropOffPhoneAgency          = 2
 	PickupDropOffCoordinateWithDriver = 3
 )
 

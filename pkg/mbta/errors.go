@@ -73,10 +73,10 @@ func (e *TimeoutError) Error() string {
 func parseAPIError(statusCode int, responseBody []byte) error {
 	var errorResponse struct {
 		Errors []struct {
-			Status string `json:"status"`
-			Code   string `json:"code"`
-			Title  string `json:"title"`
-			Detail string `json:"detail"`
+			Status string                 `json:"status"`
+			Code   string                 `json:"code"`
+			Title  string                 `json:"title"`
+			Detail string                 `json:"detail"`
 			Source map[string]interface{} `json:"source,omitempty"`
 		} `json:"errors"`
 	}
