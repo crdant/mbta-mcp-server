@@ -19,7 +19,7 @@ This Machine Learning Control Protocol (MCP) server integrates with the Massachu
 
 ```bash
 docker pull ghcr.io/crdant/mbta-mcp-server:latest
-docker run -p 8080:8080 -e MBTA_API_KEY="your-api-key" ghcr.io/crdant/mbta-mcp-server:latest
+docker run -e MBTA_API_KEY="your-api-key" ghcr.io/crdant/mbta-mcp-server:latest
 ```
 
 ### Go Installation
