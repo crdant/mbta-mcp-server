@@ -38,7 +38,6 @@ jobs:
       - name: Set version
         id: version
         run: |
-          VERSION=""
           GIT_SHORT_SHA=$(git rev-parse --short HEAD)
 
           # Initialize semver if not already initialized
@@ -60,6 +59,18 @@ jobs:
 
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=sha,format=long
+            type=ref,event=branch
+            type=ref,event=tag
+            type=ref,event=pr
+            type=raw,value=${{ steps.version.outputs.version }}
 
       - name: Install golangci-lint
         uses: golangci/golangci-lint-action@v3
@@ -126,23 +137,40 @@ jobs:
 
       - name: Build image with apko
         run: |
+          # Create comma-separated list of tags for apko
+          TAGS=$(echo '${{ steps.meta.outputs.tags }}' | tr '\n' ',' | sed 's/,$//')
+
           apko build \
             --keyring tmp-melange.pub \
             --arch amd64,arm64 \
             --repository ./packages \
             apko.yaml \
-            ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }} \
+            "${TAGS}" \
             image.tar \
             ghcr.io/${{ github.repository }}.json
 
       - name: Push image
         if: github.event_name != 'pull_request'
         run: |
-          crane push image.tar ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
-          
-          # Tag as latest if on main branch
+          # Create an array of docker tags from metadata-action output
+          readarray -t DOCKER_TAGS <<< "${{ steps.meta.outputs.tags }}"
+
+          # Get the first tag to use as reference for copying to other tags
+          FIRST_TAG=${DOCKER_TAGS[0]}
+
+          # Push the image using the first tag
+          crane push image.tar ${FIRST_TAG}
+
+          # Copy the image to all other tags
+          for TAG in "${DOCKER_TAGS[@]:1}"; do
+            crane copy ${FIRST_TAG} ${TAG}
+            echo "Pushed ${TAG}"
+          done
+
+          # Explicitly tag as latest if on main branch
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            crane tag ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }} latest
+            crane tag ${FIRST_TAG} ghcr.io/${{ github.repository }}:latest
+            echo "Tagged as latest"
           fi
 
       - name: Sign image with keyless signing
@@ -150,21 +178,52 @@ jobs:
         env:
           COSIGN_EXPERIMENTAL: "true"
         run: |
-          # Keyless signing using GitHub OIDC identity
-          cosign sign ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+          # Create an array of docker tags from metadata-action output
+          readarray -t DOCKER_TAGS <<< "${{ steps.meta.outputs.tags }}"
 
-          # Add attestation to record build information
-          cosign attest --predicate <(cat ghcr.io/${{ github.repository }}.json) ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+          # Sign each tag with keyless signing
+          for TAG in "${DOCKER_TAGS[@]}"; do
+            echo "Signing ${TAG}"
+            cosign sign "${TAG}"
+
+            # Add attestation to record build information
+            cosign attest --predicate <(cat ghcr.io/${{ github.repository }}.json) "${TAG}"
+          done
+
+          # Also sign the latest tag if on main branch
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            LATEST_TAG="ghcr.io/${{ github.repository }}:latest"
+            echo "Signing ${LATEST_TAG}"
+            cosign sign "${LATEST_TAG}"
+            cosign attest --predicate <(cat ghcr.io/${{ github.repository }}.json) "${LATEST_TAG}"
+          fi
 
       - name: Verify image signature
         if: github.event_name != 'pull_request'
         env:
           COSIGN_EXPERIMENTAL: "true"
         run: |
-          cosign verify \
-            --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/build.yml@${{ github.ref }}" \
-            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-            ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+          # Create an array of docker tags from metadata-action output
+          readarray -t DOCKER_TAGS <<< "${{ steps.meta.outputs.tags }}"
+
+          # Verify each signed tag
+          for TAG in "${DOCKER_TAGS[@]}"; do
+            echo "Verifying ${TAG}"
+            cosign verify \
+              --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/build.yml@${{ github.ref }}" \
+              --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+              "${TAG}"
+          done
+
+          # Also verify the latest tag if on main branch
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            LATEST_TAG="ghcr.io/${{ github.repository }}:latest"
+            echo "Verifying ${LATEST_TAG}"
+            cosign verify \
+              --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/build.yml@${{ github.ref }}" \
+              --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+              "${LATEST_TAG}"
+          fi
 
       - name: Upload SBOM
         if: github.event_name != 'pull_request'
