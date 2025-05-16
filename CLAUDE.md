@@ -50,9 +50,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Refactor code to improve design while keeping tests green
 - Repeat the cycle for each new feature or bugfix
 
-## Commit Guidelines
+## Version Control Guidelines
 
-Follow these principles when committing code:
+Follow these principles for working with version control:
 
 - Make small, focused commits that address a single concern
 - Commit every time you make a change to the codebase, you should never
@@ -239,7 +239,6 @@ The application is configured using environment variables:
 - `LOG_LEVEL`: Logging level (info, debug, error)
 - `TIMEOUT_SECONDS`: API request timeout in seconds
 - `MBTA_API_URL`: Base URL for the MBTA API
-- `PORT`: Server port
 - `ENVIRONMENT`: Deployment environment (development, production)
 
 ### Implementation Plan
