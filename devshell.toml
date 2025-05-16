@@ -49,6 +49,8 @@ help = "Container signing and verification"
 
 [[commands]]
 name = "semver"
+package = "semver-cli"
+category = "version management"
 help = "Semantic versioning CLI tool"
 
 [env]

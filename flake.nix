@@ -19,17 +19,17 @@
           overlays = [ devshell.overlays.default ];
         };
 
-        # Build semver-cli directly
+        # Install semver-cli using go
         semver-cli = pkgs.buildGoModule {
           pname = "semver";
-          version = "1.0.0";
+          version = "1.1.1";
           src = pkgs.fetchFromGitHub {
             owner = "maykonlsf";
             repo = "semver-cli";
-            rev = "v1.0.0";
-            sha256 = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="; # Will be updated after first build
+            rev = "v1.1.1";
+            sha256 = "sha256-O+h0fbvHIQxMoMMfW/e/RGLuCgFpP1SBT1YYQvQVA9U=";
           };
-          vendorHash = null; # Will be computed on first build
+          vendorHash = "sha256-PdaArXeC0yFD7cM9d5jz3ReD+9nrhqx4CgOSZ2TxOTU=";
           subPackages = [ "cmd/semver" ];
         };
       in
@@ -45,7 +45,7 @@
             crane
             cosign
             gnumake
-            semver-cli
+            semver-cli  # Add the semver-cli package we defined
           ];
           env = [
             {
