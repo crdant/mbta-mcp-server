@@ -58,5 +58,5 @@ melange.rsa.pub
 *.tar
 *.json
 
-# Semver temp configuration
-.semver.yaml
+# Semver configuration is intentionally tracked
+# (no .semver.yaml ignore)
