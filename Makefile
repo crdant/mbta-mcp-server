@@ -46,12 +46,12 @@ run:
 	@go run $(LDFLAGS) $(MAIN_PACKAGE)
 
 # Docker targets
-docker-build:
+image:
 	@echo "Building Docker image..."
 	@docker build -t $(BINARY_NAME):$(VERSION) .
 
-docker-run:
-	@echo "Running Docker container..."
+container:
+	@echo "Running in Docker container..."
 	@docker run --rm -e MBTA_API_KEY -p 8080:8080 $(BINARY_NAME):$(VERSION)
 
 # Release targets
