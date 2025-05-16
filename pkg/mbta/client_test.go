@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
 
@@ -57,7 +56,7 @@ func TestClientTimeout(t *testing.T) {
 	// Create a test server that delays response
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(200 * time.Millisecond) // Delay response
-		fmt.Fprintln(w, `{"data": []}`)
+		_, _ = fmt.Fprintln(w, `{"data": []}`)
 	}))
 	defer server.Close()
 
@@ -106,7 +105,7 @@ func TestClientHeaders(t *testing.T) {
 			t.Errorf("Expected Accept header to be 'application/vnd.api+json', got %q", acceptHeader)
 		}
 
-		fmt.Fprintln(w, `{"data": []}`)
+		_, _ = fmt.Fprintln(w, `{"data": []}`)
 	}))
 	defer server.Close()
 
@@ -123,7 +122,7 @@ func TestClientHeaders(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Request failed: %v", err)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 }
 
 func TestAuthentication(t *testing.T) {
@@ -136,12 +135,12 @@ func TestAuthentication(t *testing.T) {
 			authHeader := r.Header.Get("X-API-Key")
 			if authHeader != apiKey {
 				w.WriteHeader(http.StatusUnauthorized)
-				fmt.Fprintln(w, `{"errors":[{"status":"401","code":"unauthorized","title":"Unauthorized request","detail":"API key missing or invalid"}]}`)
+				_, _ = fmt.Fprintln(w, `{"errors":[{"status":"401","code":"unauthorized","title":"Unauthorized request","detail":"API key missing or invalid"}]}`)
 				return
 			}
 
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintln(w, `{"data": []}`)
+			_, _ = fmt.Fprintln(w, `{"data": []}`)
 		}))
 		defer server.Close()
 
@@ -158,7 +157,7 @@ func TestAuthentication(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Request with valid API key failed: %v", err)
 		}
-		resp.Body.Close()
+		_ = resp.Body.Close()
 	})
 
 	t.Run("Without API Key", func(t *testing.T) {
@@ -172,7 +171,7 @@ func TestAuthentication(t *testing.T) {
 
 			// Public endpoint still works but might have lower rate limits
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintln(w, `{"data": []}`)
+			_, _ = fmt.Fprintln(w, `{"data": []}`)
 		}))
 		defer server.Close()
 
@@ -189,7 +188,7 @@ func TestAuthentication(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Request to public endpoint without API key failed: %v", err)
 		}
-		resp.Body.Close()
+		_ = resp.Body.Close()
 	})
 
 	t.Run("Invalid API Key", func(t *testing.T) {
@@ -198,12 +197,12 @@ func TestAuthentication(t *testing.T) {
 			// Check if API key is invalid
 			if r.Header.Get("X-API-Key") == "invalid-key" {
 				w.WriteHeader(http.StatusUnauthorized)
-				fmt.Fprintln(w, `{"errors":[{"status":"401","code":"unauthorized","title":"Unauthorized request","detail":"API key invalid"}]}`)
+				_, _ = fmt.Fprintln(w, `{"errors":[{"status":"401","code":"unauthorized","title":"Unauthorized request","detail":"API key invalid"}]}`)
 				return
 			}
 
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintln(w, `{"data": []}`)
+			_, _ = fmt.Fprintln(w, `{"data": []}`)
 		}))
 		defer server.Close()
 
@@ -235,6 +234,7 @@ func TestAuthentication(t *testing.T) {
 }
 
 // Helper function to check if a string contains a substring
-func contains(s, substr string) bool {
-	return s != "" && len(substr) > 0 && strings.Contains(s, substr)
-}
+// Currently unused but will be needed for future tests
+// func contains(s, substr string) bool {
+// 	return s != "" && len(substr) > 0 && strings.Contains(s, substr)
+// }

@@ -18,7 +18,7 @@ func MockAPIResponse(statusCode int, responseBody string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(statusCode)
-		w.Write([]byte(responseBody))
+		_, _ = w.Write([]byte(responseBody))
 	}
 }
 
@@ -44,16 +44,16 @@ func SetupTestEnv(envMap map[string]string) func() {
 	// Save original values and set new ones
 	for key, value := range envMap {
 		originalValues[key] = os.Getenv(key)
-		os.Setenv(key, value)
+		_ = os.Setenv(key, value)
 	}
 
 	// Return cleanup function
 	return func() {
 		for key, value := range originalValues {
 			if value == "" {
-				os.Unsetenv(key)
+				_ = os.Unsetenv(key)
 			} else {
-				os.Setenv(key, value)
+				_ = os.Setenv(key, value)
 			}
 		}
 	}

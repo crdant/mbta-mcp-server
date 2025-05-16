@@ -92,7 +92,7 @@ func TestStartServer(t *testing.T) {
 		startMethod := func() {
 			_ = server.Start()
 		}
-		
+
 		// If we can compile this, the method exists
 		// This is just a compile-time check
 		_ = startMethod

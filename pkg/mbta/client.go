@@ -86,7 +86,7 @@ func (c *Client) makeRequest(ctx context.Context, method, path string, body io.R
 	if resp.StatusCode >= 400 {
 		// Read error response body
 		respBody, readErr := io.ReadAll(resp.Body)
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 
 		if readErr != nil {
 			return nil, &NetworkError{Err: fmt.Errorf("HTTP error %d and failed to read error body: %w", resp.StatusCode, readErr)}
@@ -114,7 +114,7 @@ func (c *Client) GetRoutes(ctx context.Context) ([]models.Route, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Parse response
 	var routeResponse models.RouteResponse
@@ -131,7 +131,7 @@ func (c *Client) GetRoute(ctx context.Context, routeID string) (*models.Route, e
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Parse response
 	var routeData struct {
@@ -150,7 +150,7 @@ func (c *Client) GetStops(ctx context.Context) ([]models.Stop, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Parse response
 	var stopResponse models.StopResponse
@@ -167,7 +167,7 @@ func (c *Client) GetStop(ctx context.Context, stopID string) (*models.Stop, erro
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Parse response
 	var stopData struct {
@@ -197,7 +197,7 @@ func (c *Client) GetSchedules(ctx context.Context, params map[string]string) ([]
 	if err != nil {
 		return nil, nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Parse response
 	var scheduleResponse models.ScheduleResponse
