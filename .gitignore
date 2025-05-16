@@ -57,6 +57,3 @@ melange.rsa
 melange.rsa.pub
 *.tar
 *.json
-
-# Semver configuration is intentionally tracked
-# (no .semver.yaml ignore)
