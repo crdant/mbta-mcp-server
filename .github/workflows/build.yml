@@ -1,6 +1,5 @@
 name: Build and Package
-# This workflow uses Chainguard actions for melange, apko, and crane operations
-# instead of the manual installation and execution of these tools
+# This workflow uses Chainguard actions for container builds with melange and apko
 
 on:
   push:
@@ -112,15 +111,12 @@ jobs:
       - name: Install cosign
         uses: sigstore/cosign-installer@v3.1.1
 
-      - name: Setup Melange
-        uses: chainguard-dev/actions/setup-melange@v1.0.8
-
-      - name: Setup Apko
-        uses: chainguard-dev/actions/setup-apko@v1.0.8
+      # Note: We use Chainguard actions for melange and apko builds
+      # These actions internally handle tool installation
 
       - name: Install crane
         run: |
-          # Install crane
+          # Install crane (no Chainguard action exists for this)
           CRANE_VERSION=$(curl -s https://api.github.com/repos/google/go-containerregistry/releases/latest | grep -Po '"tag_name": "v\K[^"]*')
           curl -L -o crane.tar.gz https://github.com/google/go-containerregistry/releases/download/v${CRANE_VERSION}/go-containerregistry_Linux_x86_64.tar.gz
           tar -xzf crane.tar.gz crane
