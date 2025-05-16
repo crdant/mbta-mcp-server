@@ -180,52 +180,59 @@ jobs:
         env:
           COSIGN_EXPERIMENTAL: "true"
         run: |
-          # Create an array of docker tags from metadata-action output
+          # Get the image digest (immutable content hash)
+          # Use the first tag to look up the digest
+          FIRST_TAG=$(echo '${{ steps.meta.outputs.tags }}' | head -n 1)
+          IMAGE_DIGEST=$(crane digest ${FIRST_TAG})
+          echo "Image digest: ${IMAGE_DIGEST}"
+
+          # Sign the image by digest (immutable reference)
+          IMAGE_REF="ghcr.io/${{ github.repository }}@${IMAGE_DIGEST}"
+          echo "Signing image by digest: ${IMAGE_REF}"
+          cosign sign "${IMAGE_REF}"
+
+          # Add attestation only to the digest reference
+          cosign attest --predicate <(cat ghcr.io/${{ github.repository }}.json) "${IMAGE_REF}"
+
+          # Sign specific immutable tags (version tags, SHA tags)
           readarray -t DOCKER_TAGS <<< "${{ steps.meta.outputs.tags }}"
-
-          # Sign each tag with keyless signing
           for TAG in "${DOCKER_TAGS[@]}"; do
-            echo "Signing ${TAG}"
-            cosign sign "${TAG}"
-
-            # Add attestation to record build information
-            cosign attest --predicate <(cat ghcr.io/${{ github.repository }}.json) "${TAG}"
+            # Only sign tags that are immutable (version tags and SHA-based tags)
+            if [[ "${TAG}" =~ .*:v[0-9]+\.[0-9]+\.[0-9]+ ]] || [[ "${TAG}" =~ .*:sha-[0-9a-f]+ ]]; then
+              echo "Signing immutable tag: ${TAG}"
+              cosign sign "${TAG}"
+              cosign attest --predicate <(cat ghcr.io/${{ github.repository }}.json) "${TAG}"
+            else
+              echo "Skipping mutable tag: ${TAG}"
+            fi
           done
-
-          # Also sign the latest tag if on main branch
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            LATEST_TAG="ghcr.io/${{ github.repository }}:latest"
-            echo "Signing ${LATEST_TAG}"
-            cosign sign "${LATEST_TAG}"
-            cosign attest --predicate <(cat ghcr.io/${{ github.repository }}.json) "${LATEST_TAG}"
-          fi
 
       - name: Verify image signature
         if: github.event_name != 'pull_request'
         env:
           COSIGN_EXPERIMENTAL: "true"
         run: |
-          # Create an array of docker tags from metadata-action output
+          # Verify the digest-based signature (most important)
+          IMAGE_DIGEST=$(crane digest $(echo '${{ steps.meta.outputs.tags }}' | head -n 1))
+          IMAGE_REF="ghcr.io/${{ github.repository }}@${IMAGE_DIGEST}"
+          echo "Verifying digest signature: ${IMAGE_REF}"
+          cosign verify \
+            --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/build.yml@${{ github.ref }}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            "${IMAGE_REF}"
+
+          # Verify signatures on immutable tags only
           readarray -t DOCKER_TAGS <<< "${{ steps.meta.outputs.tags }}"
-
-          # Verify each signed tag
           for TAG in "${DOCKER_TAGS[@]}"; do
-            echo "Verifying ${TAG}"
-            cosign verify \
-              --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/build.yml@${{ github.ref }}" \
-              --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-              "${TAG}"
+            # Only verify tags that are immutable (version tags and SHA-based tags)
+            if [[ "${TAG}" =~ .*:v[0-9]+\.[0-9]+\.[0-9]+ ]] || [[ "${TAG}" =~ .*:sha-[0-9a-f]+ ]]; then
+              echo "Verifying immutable tag: ${TAG}"
+              cosign verify \
+                --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/build.yml@${{ github.ref }}" \
+                --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+                "${TAG}"
+            fi
           done
-
-          # Also verify the latest tag if on main branch
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            LATEST_TAG="ghcr.io/${{ github.repository }}:latest"
-            echo "Verifying ${LATEST_TAG}"
-            cosign verify \
-              --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/build.yml@${{ github.ref }}" \
-              --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-              "${LATEST_TAG}"
-          fi
 
       - name: Scan image for vulnerabilities with Trivy
         if: github.event_name != 'pull_request'

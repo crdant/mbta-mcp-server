@@ -48,14 +48,39 @@ For more detailed information, see the [specification](spec.md).
 
 All container images are signed using Sigstore's Cosign with keyless signing. This allows users to verify that the container image was built by our GitHub Actions CI/CD pipeline.
 
-To verify a container image:
+#### Signing Security Practices
+
+We follow best practices for container image signing:
+
+1. **We sign the image digest (content hash)** - This is the most secure approach since the digest is a unique, immutable identifier for the specific content.
+
+2. **We sign immutable tags only** - We only sign tags that are immutable (e.g., version tags like `v1.2.3` and specific SHA commit tags).
+
+3. **We do not sign mutable tags** - Tags that can move (like `latest` or major version tags like `v1`) are not signed because this could create misleading security assertions.
+
+#### Verifying Container Images
+
+For highest security, verify by digest (this reference can't change):
 
 ```bash
-# Install cosign
+# Get the digest first
+DIGEST=$(crane digest ghcr.io/crdant/mbta-mcp-server:v1.2.3)
+
+# Verify the image by digest
 cosign verify \
   --certificate-identity "https://github.com/crdant/mbta-mcp-server/.github/workflows/build.yml@refs/heads/main" \
   --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-  ghcr.io/crdant/mbta-mcp-server:latest
+  ghcr.io/crdant/mbta-mcp-server@$DIGEST
+```
+
+For version-specific tags, you can verify directly:
+
+```bash
+# Verify a specific version tag
+cosign verify \
+  --certificate-identity "https://github.com/crdant/mbta-mcp-server/.github/workflows/build.yml@refs/heads/main" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  ghcr.io/crdant/mbta-mcp-server:v1.2.3
 ```
 
 ### Software Bill of Materials (SBOM)
@@ -70,11 +95,25 @@ Each build generates a comprehensive Software Bill of Materials (SBOM) that list
 To verify the SBOM attestation:
 
 ```bash
+# Get the digest first (most reliable approach)
+DIGEST=$(crane digest ghcr.io/crdant/mbta-mcp-server:v1.2.3)
+
+# Verify the SBOM attestation by digest
 cosign verify-attestation \
   --certificate-identity "https://github.com/crdant/mbta-mcp-server/.github/workflows/build.yml@refs/heads/main" \
   --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
   --type cyclonedx \
-  ghcr.io/crdant/mbta-mcp-server:latest
+  ghcr.io/crdant/mbta-mcp-server@$DIGEST
+```
+
+You can also verify SBOM attestations for specific immutable tags:
+
+```bash
+cosign verify-attestation \
+  --certificate-identity "https://github.com/crdant/mbta-mcp-server/.github/workflows/build.yml@refs/heads/main" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  --type cyclonedx \
+  ghcr.io/crdant/mbta-mcp-server:v1.2.3
 ```
 
 ### Vulnerability Scanning
