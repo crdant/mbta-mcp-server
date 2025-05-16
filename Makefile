@@ -95,42 +95,54 @@ keys:
 patch: semver-check
 	@echo "Bumping patch version..."
 	@CURR_VERSION=$$(cat version.txt) && \
-	NEW_VERSION=$$(semver bump patch $$CURR_VERSION) && \
+	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$CURR_VERSION" > .semver.yaml && \
+	semver up patch && \
+	NEW_VERSION=$$(semver get) && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
 minor: semver-check
 	@echo "Bumping minor version..."
 	@CURR_VERSION=$$(cat version.txt) && \
-	NEW_VERSION=$$(semver bump minor $$CURR_VERSION) && \
+	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$CURR_VERSION" > .semver.yaml && \
+	semver up minor && \
+	NEW_VERSION=$$(semver get) && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
 major: semver-check
 	@echo "Bumping major version..."
 	@CURR_VERSION=$$(cat version.txt) && \
-	NEW_VERSION=$$(semver bump major $$CURR_VERSION) && \
+	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$CURR_VERSION" > .semver.yaml && \
+	semver up major && \
+	NEW_VERSION=$$(semver get) && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
 alpha: semver-check
 	@echo "Creating alpha version..."
 	@CURR_VERSION=$$(cat version.txt) && \
-	NEW_VERSION=$$(semver pre alpha $$CURR_VERSION) && \
+	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$CURR_VERSION" > .semver.yaml && \
+	semver up alpha && \
+	NEW_VERSION=$$(semver get) && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
 beta: semver-check
 	@echo "Creating beta version..."
 	@CURR_VERSION=$$(cat version.txt) && \
-	NEW_VERSION=$$(semver pre beta $$CURR_VERSION) && \
+	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$CURR_VERSION" > .semver.yaml && \
+	semver up beta && \
+	NEW_VERSION=$$(semver get) && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
 rc: semver-check
 	@echo "Creating release candidate..."
 	@CURR_VERSION=$$(cat version.txt) && \
-	NEW_VERSION=$$(semver pre rc $$CURR_VERSION) && \
+	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$CURR_VERSION" > .semver.yaml && \
+	semver up rc && \
+	NEW_VERSION=$$(semver get) && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
@@ -138,7 +150,9 @@ rc: semver-check
 release: semver-check
 	@echo "Creating release from pre-release..."
 	@CURR_VERSION=$$(cat version.txt) && \
-	NEW_VERSION=$$(semver release $$CURR_VERSION) && \
+	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$CURR_VERSION" > .semver.yaml && \
+	semver up release && \
+	NEW_VERSION=$$(semver get) && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION" && \
 	go build $(LDFLAGS) -o bin/$(BINARY_NAME) $(MAIN_PACKAGE)

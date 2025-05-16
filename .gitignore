@@ -57,3 +57,6 @@ melange.rsa
 melange.rsa.pub
 *.tar
 *.json
+
+# Semver temp configuration
+.semver.yaml
