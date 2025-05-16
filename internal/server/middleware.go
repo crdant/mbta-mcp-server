@@ -4,12 +4,7 @@
 package server
 
 import (
-	"context"
 	"log"
-	"time"
-
-	"github.com/mark3labs/mcp-go/mcp"
-	mcpserver "github.com/mark3labs/mcp-go/server"
 )
 
 // loggingMiddleware creates a middleware that logs request and response information.
