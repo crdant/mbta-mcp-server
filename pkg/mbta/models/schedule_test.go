@@ -9,7 +9,7 @@ import (
 
 func TestScheduleUnmarshal(t *testing.T) {
 	// Load the sample schedules data
-	fixtureData, err := os.ReadFile("../../../test/fixtures/schedules.json")
+	fixtureData, err := os.ReadFile("testdata/schedules.json")
 	if err != nil {
 		t.Fatalf("Failed to read test fixture: %v", err)
 	}

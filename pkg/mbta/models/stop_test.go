@@ -8,7 +8,7 @@ import (
 
 func TestStopUnmarshal(t *testing.T) {
 	// Load the sample stops data
-	fixtureData, err := os.ReadFile("../../../test/fixtures/stops.json")
+	fixtureData, err := os.ReadFile("testdata/stops.json")
 	if err != nil {
 		t.Fatalf("Failed to read test fixture: %v", err)
 	}

@@ -1,0 +1,80 @@
+{
+  "data": [
+    {
+      "id": "place-north",
+      "type": "stop",
+      "attributes": {
+        "address": "North Station, Boston, MA 02114",
+        "at_street": null,
+        "description": "North Station - Commuter Rail, Orange Line, and Green Line",
+        "latitude": 42.365577,
+        "location_type": 1,
+        "longitude": -71.06129,
+        "municipality": "Boston",
+        "name": "North Station",
+        "on_street": null,
+        "platform_code": null,
+        "platform_name": null,
+        "vehicle_type": null,
+        "wheelchair_boarding": 1
+      },
+      "relationships": {
+        "facilities": {
+          "links": {
+            "related": "/facilities/?filter[stop]=place-north"
+          }
+        },
+        "parent_station": {
+          "data": null
+        },
+        "zone": {
+          "data": {
+            "id": "CR-zone-1A",
+            "type": "zone"
+          }
+        }
+      },
+      "links": {
+        "self": "/stops/place-north"
+      }
+    },
+    {
+      "id": "70061",
+      "type": "stop",
+      "attributes": {
+        "address": null,
+        "at_street": null,
+        "description": "Orange Line platform for Forest Hills-bound trains",
+        "latitude": 42.365486,
+        "location_type": 0,
+        "longitude": -71.06129,
+        "municipality": "Boston",
+        "name": "North Station",
+        "on_street": null,
+        "platform_code": "1",
+        "platform_name": "Orange Line - Forest Hills",
+        "vehicle_type": null,
+        "wheelchair_boarding": 1
+      },
+      "relationships": {
+        "facilities": {
+          "links": {
+            "related": "/facilities/?filter[stop]=70061"
+          }
+        },
+        "parent_station": {
+          "data": {
+            "id": "place-north",
+            "type": "stop"
+          }
+        },
+        "zone": {
+          "data": null
+        }
+      },
+      "links": {
+        "self": "/stops/70061"
+      }
+    }
+  ]
+}
