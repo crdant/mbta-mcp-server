@@ -99,35 +99,46 @@ init-semver: semver-check
 		semver init; \
 	fi
 
+# Helper to update semver config file
+define update-semver-yaml
+	@CURR_VERSION=$$(semver get release) && \
+	echo "Version before: $$CURR_VERSION" && \
+	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $(1)" > .semver.yaml && \
+	echo "Version after: $(1)"
+endef
+
 # Patch version increment (implements custom logic since semver-cli doesn't support it directly)
 patch: semver-check init-semver
 	@echo "Bumping patch version..."
 	@CURR_VERSION=$$(semver get release) && \
-	IFS=. read -r major minor patch rest <<< "$$CURR_VERSION" && \
-	NEW_PATCH=$$((patch + 1)) && \
-	NEW_VERSION="$$major.$$minor.$$NEW_PATCH" && \
-	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$NEW_VERSION" > .semver.yaml && \
-	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
+	$(eval PARTS := $$(subst ., ,$$CURR_VERSION)) \
+	$(eval MAJOR := $$(word 1,$$(PARTS))) \
+	$(eval MINOR := $$(word 2,$$(PARTS))) \
+	$(eval PATCH := $$(word 3,$$(PARTS))) \
+	$(eval NEW_PATCH := $$(shell expr $$(PATCH) + 1)) \
+	$(eval NEW_VERSION := $$(MAJOR).$$(MINOR).$$(NEW_PATCH)) \
+	$(call update-semver-yaml,$$(NEW_VERSION))
 
 # Minor version increment (implements custom logic since semver-cli doesn't support it directly)
 minor: semver-check init-semver
 	@echo "Bumping minor version..."
 	@CURR_VERSION=$$(semver get release) && \
-	IFS=. read -r major minor patch rest <<< "$$CURR_VERSION" && \
-	NEW_MINOR=$$((minor + 1)) && \
-	NEW_VERSION="$$major.$$NEW_MINOR.0" && \
-	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$NEW_VERSION" > .semver.yaml && \
-	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
+	$(eval PARTS := $$(subst ., ,$$CURR_VERSION)) \
+	$(eval MAJOR := $$(word 1,$$(PARTS))) \
+	$(eval MINOR := $$(word 2,$$(PARTS))) \
+	$(eval NEW_MINOR := $$(shell expr $$(MINOR) + 1)) \
+	$(eval NEW_VERSION := $$(MAJOR).$$(NEW_MINOR).0) \
+	$(call update-semver-yaml,$$(NEW_VERSION))
 
 # Major version increment (implements custom logic since semver-cli doesn't support it directly)
 major: semver-check init-semver
 	@echo "Bumping major version..."
 	@CURR_VERSION=$$(semver get release) && \
-	IFS=. read -r major minor patch rest <<< "$$CURR_VERSION" && \
-	NEW_MAJOR=$$((major + 1)) && \
-	NEW_VERSION="$$NEW_MAJOR.0.0" && \
-	echo -e "alpha: 0\nbeta: 0\nrc: 0\nrelease: $$NEW_VERSION" > .semver.yaml && \
-	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
+	$(eval PARTS := $$(subst ., ,$$CURR_VERSION)) \
+	$(eval MAJOR := $$(word 1,$$(PARTS))) \
+	$(eval NEW_MAJOR := $$(shell expr $$(MAJOR) + 1)) \
+	$(eval NEW_VERSION := $$(NEW_MAJOR).0.0) \
+	$(call update-semver-yaml,$$(NEW_VERSION))
 
 # Alpha version (using built-in semver-cli functionality)
 alpha: semver-check init-semver
