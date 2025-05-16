@@ -51,8 +51,9 @@ help = "Container signing and verification"
 name = "semver"
 package = "semver-cli"
 category = "version management"
-help = "Semantic versioning CLI tool"
+help = "Semantic versioning CLI tool from maykonlsf/semver-cli"
 
-[env]
+[[env]]
 # Development environment variables
-ENVIRONMENT = "development"
+name = "ENVIRONMENT"
+value = "development"

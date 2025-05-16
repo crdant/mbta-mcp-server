@@ -14,23 +14,29 @@
   outputs = { self, nixpkgs, flake-utils, devshell, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [ devshell.overlays.default ];
+        # Define an overlay that adds our packages to nixpkgs
+        overlay = final: prev: {
+          semver-cli = final.buildGoModule {
+            pname = "semver-cli";
+            version = "1.1.1";
+            src = final.fetchFromGitHub {
+              owner = "maykonlsf";
+              repo = "semver-cli";
+              rev = "v1.1.1";
+              sha256 = "sha256-Qj9RV2wW0i0hL5CDL4WCa7yKUIvmL2kkId1K8qNIfsw=";
+            };
+            vendorHash = "sha256-o87+Y0m2pmjijlEXQDFFekshCgWR+lYt83nU4w5faV0=";
+            subPackages = [ "cmd/semver" ];
+          };
         };
 
-        # Install semver-cli using go
-        semver-cli = pkgs.buildGoModule {
-          pname = "semver";
-          version = "1.1.1";
-          src = pkgs.fetchFromGitHub {
-            owner = "maykonlsf";
-            repo = "semver-cli";
-            rev = "v1.1.1";
-            sha256 = "sha256-O+h0fbvHIQxMoMMfW/e/RGLuCgFpP1SBT1YYQvQVA9U=";
-          };
-          vendorHash = "sha256-PdaArXeC0yFD7cM9d5jz3ReD+9nrhqx4CgOSZ2TxOTU=";
-          subPackages = [ "cmd/semver" ];
+        # Import nixpkgs with our overlays
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [
+            devshell.overlays.default
+            overlay
+          ];
         };
       in
       {
