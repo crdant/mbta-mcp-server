@@ -64,7 +64,7 @@ func (s *Server) ApplyMiddleware() {
 	// In a future implementation, we would implement this by wrapping individual
 	// tool handlers with middleware as they are registered.
 	log.Println("Applying logging middleware to MCP server")
-	
+
 	if s.config.Debug {
 		log.Printf("Applied logging middleware to MCP server")
 	}
