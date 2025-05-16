@@ -1,0 +1,12 @@
+{
+  "name": "mbta-mcp-server",
+  "private": true,
+  "version": "0.1.0",
+  "description": "An MCP server that communicates with the MBTA API to provide Boston-area transit information",
+  "engines": {
+    "node": ">=16"
+  },
+  "devDependencies": {
+    "semver-cli": "1.0.0"
+  }
+}

@@ -1,8 +1,18 @@
 BINARY_NAME=mbta-mcp-server
-VERSION=dev
+VERSION=$(shell cat version.txt 2>/dev/null || echo "0.1.0")
+GIT_SHORT_SHA=$(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+BUILD_VERSION=$(VERSION)+build.$(GIT_SHORT_SHA)
 MAIN_PACKAGE=./cmd/server
 GO_FILES=$(shell find . -name '*.go' -not -path "./vendor/*")
-LDFLAGS=-ldflags "-X main.Version=$(VERSION)"
+LDFLAGS=-ldflags "-X main.Version=$(BUILD_VERSION)"
+
+# Check if semver-cli is installed
+SEMVER_CLI := $(shell command -v semver-cli 2> /dev/null)
+
+# Install semver-cli if not installed
+$(SEMVER_CLI):
+	@echo "Installing semver-cli..."
+	@npm install -g semver-cli
 
 .PHONY: all build clean test test-coverage lint vet fmt
 
@@ -81,7 +91,91 @@ keys:
 		openssl rsa -in melange.rsa -pubout -out melange.rsa.pub; \
 	fi
 
+# Semver targets
+.PHONY: patch minor major alpha beta rc release
+
+patch: $(SEMVER_CLI)
+	@echo "Bumping patch version..."
+	@CURR_VERSION=$$(cat version.txt) && \
+	NEW_VERSION=$$(semver-cli inc patch $$CURR_VERSION) && \
+	echo $$NEW_VERSION > version.txt && \
+	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
+
+minor: $(SEMVER_CLI)
+	@echo "Bumping minor version..."
+	@CURR_VERSION=$$(cat version.txt) && \
+	NEW_VERSION=$$(semver-cli inc minor $$CURR_VERSION) && \
+	echo $$NEW_VERSION > version.txt && \
+	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
+
+major: $(SEMVER_CLI)
+	@echo "Bumping major version..."
+	@CURR_VERSION=$$(cat version.txt) && \
+	NEW_VERSION=$$(semver-cli inc major $$CURR_VERSION) && \
+	echo $$NEW_VERSION > version.txt && \
+	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
+
+alpha: $(SEMVER_CLI)
+	@echo "Creating alpha version..."
+	@CURR_VERSION=$$(cat version.txt) && \
+	BASE_VERSION=$$(semver-cli extract release-version $$CURR_VERSION) && \
+	PRERELEASE=$$(semver-cli extract prerelease $$CURR_VERSION) && \
+	if [ -z "$$PRERELEASE" ]; then \
+		NEW_VERSION="$$BASE_VERSION-alpha.1"; \
+	elif [[ "$$PRERELEASE" == alpha.* ]]; then \
+		ALPHA_NUM=$$(echo $$PRERELEASE | sed 's/alpha\.//') && \
+		NEW_VERSION="$$BASE_VERSION-alpha.$$((ALPHA_NUM+1))"; \
+	else \
+		NEW_VERSION="$$BASE_VERSION-alpha.1"; \
+	fi && \
+	echo $$NEW_VERSION > version.txt && \
+	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
+
+beta: $(SEMVER_CLI)
+	@echo "Creating beta version..."
+	@CURR_VERSION=$$(cat version.txt) && \
+	BASE_VERSION=$$(semver-cli extract release-version $$CURR_VERSION) && \
+	PRERELEASE=$$(semver-cli extract prerelease $$CURR_VERSION) && \
+	if [ -z "$$PRERELEASE" ]; then \
+		NEW_VERSION="$$BASE_VERSION-beta.1"; \
+	elif [[ "$$PRERELEASE" == beta.* ]]; then \
+		BETA_NUM=$$(echo $$PRERELEASE | sed 's/beta\.//') && \
+		NEW_VERSION="$$BASE_VERSION-beta.$$((BETA_NUM+1))"; \
+	else \
+		NEW_VERSION="$$BASE_VERSION-beta.1"; \
+	fi && \
+	echo $$NEW_VERSION > version.txt && \
+	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
+
+rc: $(SEMVER_CLI)
+	@echo "Creating release candidate..."
+	@CURR_VERSION=$$(cat version.txt) && \
+	BASE_VERSION=$$(semver-cli extract release-version $$CURR_VERSION) && \
+	PRERELEASE=$$(semver-cli extract prerelease $$CURR_VERSION) && \
+	if [ -z "$$PRERELEASE" ]; then \
+		NEW_VERSION="$$BASE_VERSION-rc.1"; \
+	elif [[ "$$PRERELEASE" == rc.* ]]; then \
+		RC_NUM=$$(echo $$PRERELEASE | sed 's/rc\.//') && \
+		NEW_VERSION="$$BASE_VERSION-rc.$$((RC_NUM+1))"; \
+	else \
+		NEW_VERSION="$$BASE_VERSION-rc.1"; \
+	fi && \
+	echo $$NEW_VERSION > version.txt && \
+	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
+
 # Release targets
-release:
-	@echo "Creating release version $(VERSION)..."
-	@go build $(LDFLAGS) -o bin/$(BINARY_NAME) $(MAIN_PACKAGE)
+release: $(SEMVER_CLI)
+	@echo "Creating release from pre-release..."
+	@CURR_VERSION=$$(cat version.txt) && \
+	BASE_VERSION=$$(semver-cli extract release-version $$CURR_VERSION) && \
+	echo $$BASE_VERSION > version.txt && \
+	echo "Version bumped from $$CURR_VERSION to $$BASE_VERSION" && \
+	go build $(LDFLAGS) -o bin/$(BINARY_NAME) $(MAIN_PACKAGE)
+
+tag-version:
+	@echo "Tagging version $(VERSION)..."
+	@git add version.txt
+	@git commit -m "chore: bump version to $(VERSION)"
+	@git tag -a "v$(VERSION)" -m "Version $(VERSION)"
+	@echo "Tag v$(VERSION) created"
+	@echo "Run 'git push && git push --tags' to push changes"

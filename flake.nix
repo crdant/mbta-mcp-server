@@ -31,6 +31,7 @@
             crane
             cosign
             gnumake
+            nodejs # For semver-cli
           ];
           env = [
             {

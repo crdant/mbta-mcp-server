@@ -8,7 +8,8 @@ import (
 )
 
 // Version will be set at build time
-var Version = "dev"
+// Format: semver+build.COMMIT_SHA (e.g., 1.2.3+build.a1b2c3d)
+var Version = "0.1.0+build.dev"
 
 func main() {
 	log.Printf("Starting MBTA MCP Server version %s", Version)

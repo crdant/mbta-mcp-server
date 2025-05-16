@@ -117,6 +117,34 @@ make run
 make clean
 ```
 
+### Version Management
+
+```bash
+# Bump patch version (1.0.0 -> 1.0.1)
+make patch
+
+# Bump minor version (1.0.0 -> 1.1.0)
+make minor
+
+# Bump major version (1.0.0 -> 2.0.0)
+make major
+
+# Create/increment alpha version (1.0.0 -> 1.0.0-alpha.1 -> 1.0.0-alpha.2)
+make alpha
+
+# Create/increment beta version (1.0.0 -> 1.0.0-beta.1 -> 1.0.0-beta.2)
+make beta
+
+# Create/increment release candidate (1.0.0 -> 1.0.0-rc.1 -> 1.0.0-rc.2)
+make rc
+
+# Create final release from pre-release (1.0.0-rc.1 -> 1.0.0)
+make release
+
+# Tag the current version in git
+make tag-version
+```
+
 ### Testing
 
 ```bash
