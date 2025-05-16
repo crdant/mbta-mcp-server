@@ -29,7 +29,7 @@ jobs:
           cache: true
 
       - name: Install semver-cli
-        run: npm install -g semver-cli
+        run: go install github.com/maykonlf/semver-cli/cmd/semver-cli@latest
 
       - name: Set version
         id: version

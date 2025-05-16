@@ -12,7 +12,7 @@ SEMVER_CLI := $(shell command -v semver-cli 2> /dev/null)
 # Install semver-cli if not installed
 $(SEMVER_CLI):
 	@echo "Installing semver-cli..."
-	@npm install -g semver-cli
+	@go install github.com/maykonlf/semver-cli/cmd/semver-cli@latest
 
 .PHONY: all build clean test test-coverage lint vet fmt
 
@@ -97,69 +97,42 @@ keys:
 patch: $(SEMVER_CLI)
 	@echo "Bumping patch version..."
 	@CURR_VERSION=$$(cat version.txt) && \
-	NEW_VERSION=$$(semver-cli inc patch $$CURR_VERSION) && \
+	NEW_VERSION=$$(semver-cli bump patch $$CURR_VERSION) && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
 minor: $(SEMVER_CLI)
 	@echo "Bumping minor version..."
 	@CURR_VERSION=$$(cat version.txt) && \
-	NEW_VERSION=$$(semver-cli inc minor $$CURR_VERSION) && \
+	NEW_VERSION=$$(semver-cli bump minor $$CURR_VERSION) && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
 major: $(SEMVER_CLI)
 	@echo "Bumping major version..."
 	@CURR_VERSION=$$(cat version.txt) && \
-	NEW_VERSION=$$(semver-cli inc major $$CURR_VERSION) && \
+	NEW_VERSION=$$(semver-cli bump major $$CURR_VERSION) && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
 alpha: $(SEMVER_CLI)
 	@echo "Creating alpha version..."
 	@CURR_VERSION=$$(cat version.txt) && \
-	BASE_VERSION=$$(semver-cli extract release-version $$CURR_VERSION) && \
-	PRERELEASE=$$(semver-cli extract prerelease $$CURR_VERSION) && \
-	if [ -z "$$PRERELEASE" ]; then \
-		NEW_VERSION="$$BASE_VERSION-alpha.1"; \
-	elif [[ "$$PRERELEASE" == alpha.* ]]; then \
-		ALPHA_NUM=$$(echo $$PRERELEASE | sed 's/alpha\.//') && \
-		NEW_VERSION="$$BASE_VERSION-alpha.$$((ALPHA_NUM+1))"; \
-	else \
-		NEW_VERSION="$$BASE_VERSION-alpha.1"; \
-	fi && \
+	NEW_VERSION=$$(semver-cli pre alpha $$CURR_VERSION) && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
 beta: $(SEMVER_CLI)
 	@echo "Creating beta version..."
 	@CURR_VERSION=$$(cat version.txt) && \
-	BASE_VERSION=$$(semver-cli extract release-version $$CURR_VERSION) && \
-	PRERELEASE=$$(semver-cli extract prerelease $$CURR_VERSION) && \
-	if [ -z "$$PRERELEASE" ]; then \
-		NEW_VERSION="$$BASE_VERSION-beta.1"; \
-	elif [[ "$$PRERELEASE" == beta.* ]]; then \
-		BETA_NUM=$$(echo $$PRERELEASE | sed 's/beta\.//') && \
-		NEW_VERSION="$$BASE_VERSION-beta.$$((BETA_NUM+1))"; \
-	else \
-		NEW_VERSION="$$BASE_VERSION-beta.1"; \
-	fi && \
+	NEW_VERSION=$$(semver-cli pre beta $$CURR_VERSION) && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
 rc: $(SEMVER_CLI)
 	@echo "Creating release candidate..."
 	@CURR_VERSION=$$(cat version.txt) && \
-	BASE_VERSION=$$(semver-cli extract release-version $$CURR_VERSION) && \
-	PRERELEASE=$$(semver-cli extract prerelease $$CURR_VERSION) && \
-	if [ -z "$$PRERELEASE" ]; then \
-		NEW_VERSION="$$BASE_VERSION-rc.1"; \
-	elif [[ "$$PRERELEASE" == rc.* ]]; then \
-		RC_NUM=$$(echo $$PRERELEASE | sed 's/rc\.//') && \
-		NEW_VERSION="$$BASE_VERSION-rc.$$((RC_NUM+1))"; \
-	else \
-		NEW_VERSION="$$BASE_VERSION-rc.1"; \
-	fi && \
+	NEW_VERSION=$$(semver-cli pre rc $$CURR_VERSION) && \
 	echo $$NEW_VERSION > version.txt && \
 	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION"
 
@@ -167,9 +140,9 @@ rc: $(SEMVER_CLI)
 release: $(SEMVER_CLI)
 	@echo "Creating release from pre-release..."
 	@CURR_VERSION=$$(cat version.txt) && \
-	BASE_VERSION=$$(semver-cli extract release-version $$CURR_VERSION) && \
-	echo $$BASE_VERSION > version.txt && \
-	echo "Version bumped from $$CURR_VERSION to $$BASE_VERSION" && \
+	NEW_VERSION=$$(semver-cli release $$CURR_VERSION) && \
+	echo $$NEW_VERSION > version.txt && \
+	echo "Version bumped from $$CURR_VERSION to $$NEW_VERSION" && \
 	go build $(LDFLAGS) -o bin/$(BINARY_NAME) $(MAIN_PACKAGE)
 
 tag-version:

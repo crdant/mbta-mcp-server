@@ -17,11 +17,6 @@ coverage.html
 
 # Dependency directories
 vendor/
-node_modules/
-
-# Include package.json but ignore other npm files
-!package.json
-!.npmrc
 
 # Go workspace file
 go.work
