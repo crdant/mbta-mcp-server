@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  packages: write
+  id-token: write  # Required for keyless signing with Cosign
 
 jobs:
   goreleaser:
@@ -46,6 +48,48 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.1.1
+
+      - name: Sign binaries with keyless signing
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          # Sign each binary artifact with keyless signing
+          for artifact in dist/*.tar.gz dist/*.zip; do
+            if [ -f "$artifact" ]; then
+              cosign sign-blob --yes "$artifact" > "${artifact}.sig"
+              echo "Signed ${artifact}"
+            fi
+          done
+
+      - name: Sign container images with keyless signing
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          # Sign all container images built by goreleaser
+          for image in $(cat dist/artifacts.json | jq -r '.docker_images[]?.name + "@" + .docker_images[]?.id'); do
+            if [ ! -z "$image" ]; then
+              cosign sign "$image"
+              echo "Signed ${image}"
+            fi
+          done
+
+      - name: Verify container image signatures
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          # Verify signatures of all container images
+          for image in $(cat dist/artifacts.json | jq -r '.docker_images[]?.name + "@" + .docker_images[]?.id'); do
+            if [ ! -z "$image" ]; then
+              cosign verify \
+                --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/release.yml@refs/tags/${{ github.ref_name }}" \
+                --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+                "$image"
+              echo "Verified ${image}"
+            fi
+          done
+
       - name: Upload assets
         uses: actions/upload-artifact@v3
         with:

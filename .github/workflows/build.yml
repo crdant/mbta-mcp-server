@@ -11,6 +11,7 @@ on:
 permissions:
   contents: read
   packages: write
+  id-token: write  # Required for keyless signing with Cosign
 
 jobs:
   build:
@@ -111,10 +112,13 @@ jobs:
 
       - name: Build package with melange
         run: |
+          # Generate a temporary key for melange build (will be discarded)
+          cosign generate-key-pair --output-key-prefix tmp-melange
+
           melange build \
             --arch amd64,arm64 \
-            --signing-key <(cosign generate-key-pair --output-key-prefix cosign) \
-            --keyring-append cosign.pub \
+            --signing-key tmp-melange.key \
+            --keyring-append tmp-melange.pub \
             --out-dir ./packages \
             --repository-append ./packages \
             --version ${{ steps.version.outputs.version }} \
@@ -123,7 +127,7 @@ jobs:
       - name: Build image with apko
         run: |
           apko build \
-            --keyring cosign.pub \
+            --keyring tmp-melange.pub \
             --arch amd64,arm64 \
             --repository ./packages \
             apko.yaml \
@@ -141,10 +145,26 @@ jobs:
             crane tag ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }} latest
           fi
 
-      - name: Sign image
+      - name: Sign image with keyless signing
         if: github.event_name != 'pull_request'
+        env:
+          COSIGN_EXPERIMENTAL: "true"
         run: |
-          cosign sign --key cosign.key ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+          # Keyless signing using GitHub OIDC identity
+          cosign sign ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+
+          # Add attestation to record build information
+          cosign attest --predicate <(cat ghcr.io/${{ github.repository }}.json) ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+
+      - name: Verify image signature
+        if: github.event_name != 'pull_request'
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          cosign verify \
+            --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/build.yml@${{ github.ref }}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
 
       - name: Upload SBOM
         if: github.event_name != 'pull_request'
