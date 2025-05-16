@@ -26,16 +26,7 @@ archives:
       - goos: windows
         format: zip
 
-dockers:
-  - image_templates:
-      - ghcr.io/crdant/mbta-mcp-server:{{ .Version }}
-      - ghcr.io/crdant/mbta-mcp-server:latest
-    dockerfile: Dockerfile.goreleaser
-    build_flag_templates:
-      - --label=org.opencontainers.image.created={{.Date}}
-      - --label=org.opencontainers.image.title={{.ProjectName}}
-      - --label=org.opencontainers.image.revision={{.FullCommit}}
-      - --label=org.opencontainers.image.version={{.Version}}
+# Images are built with melange and apko in a separate workflow
 
 checksum:
   name_template: 'checksums.txt'

@@ -28,14 +28,24 @@ name = "goreleaser"
 help = "Release automation tool for Go projects"
 
 [[commands]]
-package = "docker"
-name = "docker"
-help = "Container runtime"
+package = "melange"
+name = "melange"
+help = "Build APK packages from source"
 
 [[commands]]
-package = "docker-compose"
-name = "docker-compose"
-help = "Multi-container Docker applications"
+package = "apko"
+name = "apko"
+help = "Build OCI images from APK packages"
+
+[[commands]]
+package = "crane"
+name = "crane"
+help = "Tool for interacting with remote images and registries"
+
+[[commands]]
+package = "cosign"
+name = "cosign"
+help = "Container signing and verification"
 
 [env]
 # Development environment variables

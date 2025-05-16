@@ -26,8 +26,10 @@
             go
             golangci-lint
             goreleaser
-            docker
-            docker-compose
+            apko
+            melange
+            crane
+            cosign
             gnumake
           ];
           env = [

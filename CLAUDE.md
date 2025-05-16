@@ -149,13 +149,19 @@ make vet
 make all
 ```
 
-### Docker
+### Container Image
 
 ```bash
-# Build Docker image
+# Generate signing keys (first time only)
+make keys
+
+# Build package with melange
+make package
+
+# Build OCI image with apko
 make image
 
-# Run in Docker container
+# Run in container
 make container
 ```
 

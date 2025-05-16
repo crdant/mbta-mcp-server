@@ -45,14 +45,41 @@ run:
 	@echo "Running $(BINARY_NAME)..."
 	@go run $(LDFLAGS) $(MAIN_PACKAGE)
 
-# Docker targets
-image:
-	@echo "Building Docker image..."
-	@docker build -t $(BINARY_NAME):$(VERSION) .
+# OCI image targets
+package:
+	@echo "Building package with melange..."
+	@mkdir -p ./packages
+	@melange build --arch amd64,arm64 \
+		--signing-key melange.rsa \
+		--keyring-append melange.rsa.pub \
+		--out-dir ./packages \
+		--repository-append ./packages \
+		--version $(VERSION) \
+		melange.yaml
 
-container:
-	@echo "Running in Docker container..."
+image: package
+	@echo "Building OCI image with apko..."
+	@apko build \
+		--keyring melange.rsa.pub \
+		--arch amd64,arm64 \
+		--repository ./packages \
+		apko.yaml \
+		$(BINARY_NAME):$(VERSION) \
+		image.tar \
+		sbom.json
+
+container: image
+	@echo "Loading image into Docker..."
+	@docker load < image.tar
+	@echo "Running container..."
 	@docker run --rm -e MBTA_API_KEY -p 8080:8080 $(BINARY_NAME):$(VERSION)
+
+keys:
+	@echo "Generating signing keys..."
+	@if [ ! -f melange.rsa ]; then \
+		openssl genrsa -out melange.rsa 4096; \
+		openssl rsa -in melange.rsa -pubout -out melange.rsa.pub; \
+	fi
 
 # Release targets
 release:

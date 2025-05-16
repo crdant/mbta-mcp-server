@@ -50,3 +50,10 @@ Thumbs.db
 # Build output directories
 dist/
 build/
+packages/
+
+# Melange and apko outputs
+melange.rsa
+melange.rsa.pub
+*.tar
+*.json

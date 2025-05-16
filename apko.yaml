@@ -1,0 +1,34 @@
+contents:
+  packages:
+    - ca-certificates-bundle
+    - mbta-mcp-server@local
+
+entrypoint:
+  command: /usr/bin/mbta-mcp-server
+
+environment:
+  PATH: /usr/sbin:/usr/bin:/sbin:/bin
+
+work-dir: /
+
+accounts:
+  groups:
+    - groupname: mbta
+      gid: 10001
+  users:
+    - username: mbta
+      uid: 10001
+      gid: 10001
+  run-as: mbta
+
+# Ensure empty directories are created
+paths:
+  - path: /etc/mbta-mcp-server
+    type: directory
+    permissions: 0755
+    uid: 10001
+    gid: 10001
+
+archs:
+  - amd64
+  - arm64
