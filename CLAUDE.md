@@ -119,7 +119,12 @@ make clean
 
 ### Version Management
 
+All versioning is handled by the semver-cli tool, with convenient Make targets.
+
 ```bash
+# Initialize semver (only needed once)
+make init-semver
+
 # Bump patch version (1.0.0 -> 1.0.1)
 make patch
 
@@ -144,6 +149,9 @@ make release
 # Tag the current version in git
 make tag-version
 ```
+
+Version info is stored in the `.semver.yaml` file and accessed at build time.
+The build process automatically includes the git commit hash as build metadata.
 
 ### Testing
 
