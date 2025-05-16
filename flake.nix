@@ -9,18 +9,28 @@
       url = "github:edolstra/flake-compat";
       flake = false;
     };
-    semver-cli = {
-      url = "github:maykonlf/semver-cli";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
-  outputs = { self, nixpkgs, flake-utils, devshell, semver-cli, ... }:
+  outputs = { self, nixpkgs, flake-utils, devshell, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
           inherit system;
           overlays = [ devshell.overlays.default ];
+        };
+
+        # Build semver-cli directly
+        semver-cli = pkgs.buildGoModule {
+          pname = "semver-cli";
+          version = "1.0.0";
+          src = pkgs.fetchFromGitHub {
+            owner = "maykonlf";
+            repo = "semver-cli";
+            rev = "v1.0.0";
+            sha256 = "0gwgwc1m432ri3mzap7bx4ddgcml1g3a4xaqbjn2xnxcdyiz8555";
+          };
+          vendorHash = "sha256-y3BX6bGOLvxTSaQcLyo8PJ4L/U/+GsbONSv29xO9Mj8=";
+          subPackages = [ "cmd/semver-cli" ];
         };
       in
       {
@@ -35,7 +45,7 @@
             crane
             cosign
             gnumake
-            semver-cli.packages.${system}.default
+            semver-cli
           ];
           env = [
             {
