@@ -7,7 +7,7 @@ This document tracks the progress of implementing the MBTA MCP server according 
 ### Phase 1: Project Setup and Core Structure
 - [x] Initialize Go project with proper module structure
 - [x] Set up testing framework and CI configuration
-- [ ] Implement basic MCP server skeleton
+- [x] Implement basic MCP server skeleton
 
 ### Phase 2: MBTA API Client
 - [ ] Create client for MBTA API interactions
@@ -49,7 +49,7 @@ This document tracks the progress of implementing the MBTA MCP server according 
 - [x] Implement first basic tests
 
 #### Step 1.3: MCP Server Skeleton
-- [ ] Add basic MCP implementation
+- [x] Add basic MCP implementation
 - [x] Create server entry point
 - [x] Implement configuration loading
 
