@@ -113,13 +113,19 @@ jobs:
         uses: sigstore/cosign-installer@v3.1.1
 
       - name: Setup Melange
-        uses: chainguard-dev/actions/setup-melange@v1.0.0
+        uses: chainguard-dev/actions/setup-melange@v1.0.8
 
       - name: Setup Apko
-        uses: chainguard-dev/actions/setup-apko@v1.0.0
+        uses: chainguard-dev/actions/setup-apko@v1.0.8
 
-      - name: Setup Crane
-        uses: chainguard-dev/actions/setup-crane@v1.0.0
+      - name: Install crane
+        run: |
+          # Install crane
+          CRANE_VERSION=$(curl -s https://api.github.com/repos/google/go-containerregistry/releases/latest | grep -Po '"tag_name": "v\K[^"]*')
+          curl -L -o crane.tar.gz https://github.com/google/go-containerregistry/releases/download/v${CRANE_VERSION}/go-containerregistry_Linux_x86_64.tar.gz
+          tar -xzf crane.tar.gz crane
+          chmod +x crane
+          sudo mv crane /usr/local/bin/
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
@@ -129,7 +135,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build package with melange
-        uses: chainguard-dev/actions/melange-build@v1.0.0
+        uses: chainguard-dev/actions/melange-build@v1.0.8
         with:
           config: melange.yaml
           archs: amd64,arm64
@@ -141,7 +147,7 @@ jobs:
           version: ${{ steps.version.outputs.version }}
 
       - name: Build image with apko
-        uses: chainguard-dev/actions/apko-build@v1.0.0
+        uses: chainguard-dev/actions/apko-build@v1.0.8
         with:
           config: apko.yaml
           tag: ${{ fromJSON(format('["{0}"]', steps.meta.outputs.tags))[0] }}
@@ -153,13 +159,27 @@ jobs:
 
       - name: Push image
         if: github.event_name != 'pull_request'
-        uses: chainguard-dev/actions/crane-push@v1.0.0
-        with:
-          image-tar: image.tar
-          image-ref: ${{ fromJSON(format('["{0}"]', steps.meta.outputs.tags))[0] }}
-          extra-tags: |
-            ${{ join(fromJSON(format('{"tags":%s}', steps.meta.outputs.json)).tags, '\n') }}
-            ${{ github.ref == 'refs/heads/main' && 'latest' || '' }}
+        run: |
+          # Create an array of docker tags from metadata-action output
+          readarray -t DOCKER_TAGS <<< "${{ steps.meta.outputs.tags }}"
+
+          # Get the first tag to use as reference for copying to other tags
+          FIRST_TAG=${DOCKER_TAGS[0]}
+
+          # Push the image using the first tag
+          crane push image.tar ${FIRST_TAG}
+
+          # Copy the image to all other tags
+          for TAG in "${DOCKER_TAGS[@]:1}"; do
+            crane copy ${FIRST_TAG} ${TAG}
+            echo "Pushed ${TAG}"
+          done
+
+          # Explicitly tag as latest if on main branch
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            crane tag ${FIRST_TAG} ghcr.io/${{ github.repository }}:latest
+            echo "Tagged as latest"
+          fi
 
       - name: Sign image digest with keyless signing
         if: github.event_name != 'pull_request'
@@ -208,7 +228,7 @@ jobs:
 
       - name: Scan image for vulnerabilities with Trivy
         if: github.event_name != 'pull_request'
-        uses: chainguard-dev/actions/trivy-image-scan@v1.0.0
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ fromJSON(format('["{0}"]', steps.meta.outputs.tags))[0] }}
           format: 'sarif'
