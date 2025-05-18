@@ -140,7 +140,7 @@ jobs:
           keyring-append: tmp-melange.pub
           out-dir: ./packages
           repository-append: ./packages
-          version: ${{ steps.version.outputs.version }}
+          version: v0.25.1
 
       - name: Build image with apko
         uses: chainguard-dev/actions/apko-build@v1.0.8
