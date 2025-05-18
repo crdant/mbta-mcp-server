@@ -95,14 +95,15 @@ func (s *Server) getRoutesHandler(ctx context.Context, request mcp.CallToolReque
 }
 
 // createErrorResponse creates a standardized error response for MCP requests.
-func createErrorResponse(message string) *mcp.CallToolResult {
-	errorContent := mcp.TextContent{
-		Type: "text",
-		Text: message,
-	}
-
-	return &mcp.CallToolResult{
-		Content: []mcp.Content{errorContent},
-		IsError: true,
-	}
-}
+// Currently unused but will be used for error handling in future implementations.
+// func createErrorResponse(message string) *mcp.CallToolResult {
+// 	errorContent := mcp.TextContent{
+// 		Type: "text",
+// 		Text: message,
+// 	}
+//
+// 	return &mcp.CallToolResult{
+// 		Content: []mcp.Content{errorContent},
+// 		IsError: true,
+// 	}
+// }

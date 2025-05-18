@@ -55,7 +55,7 @@ func TestStopUnmarshal(t *testing.T) {
 	if platform.ID != "70061" {
 		t.Errorf("Expected stop ID '70061', got '%s'", platform.ID)
 	}
-	
+
 	platformAttrs := platform.Attributes
 	if platformAttrs.LocationType != LocationTypePlatform {
 		t.Errorf("Expected location_type %d, got %d", LocationTypePlatform, platformAttrs.LocationType)
