@@ -222,27 +222,27 @@ func TestScheduleMarshal(t *testing.T) {
 
 func TestSchedule_GetDuration(t *testing.T) {
 	tests := []struct {
-		name           string
-		arrivalTime    string
-		departureTime  string
+		name            string
+		arrivalTime     string
+		departureTime   string
 		expectedMinutes int
 	}{
 		{
-			name:           "Two minute duration",
-			arrivalTime:    "2023-05-20T12:00:00-04:00",
-			departureTime:  "2023-05-20T12:02:00-04:00",
+			name:            "Two minute duration",
+			arrivalTime:     "2023-05-20T12:00:00-04:00",
+			departureTime:   "2023-05-20T12:02:00-04:00",
 			expectedMinutes: 2,
 		},
 		{
-			name:           "Ten minute duration",
-			arrivalTime:    "2023-05-20T12:00:00-04:00",
-			departureTime:  "2023-05-20T12:10:00-04:00",
+			name:            "Ten minute duration",
+			arrivalTime:     "2023-05-20T12:00:00-04:00",
+			departureTime:   "2023-05-20T12:10:00-04:00",
 			expectedMinutes: 10,
 		},
 		{
-			name:           "Same time (zero duration)",
-			arrivalTime:    "2023-05-20T12:00:00-04:00",
-			departureTime:  "2023-05-20T12:00:00-04:00",
+			name:            "Same time (zero duration)",
+			arrivalTime:     "2023-05-20T12:00:00-04:00",
+			departureTime:   "2023-05-20T12:00:00-04:00",
 			expectedMinutes: 0,
 		},
 	}
@@ -298,45 +298,45 @@ func TestSchedule_FormattedTimes(t *testing.T) {
 
 func TestSchedule_PickupDropOff(t *testing.T) {
 	tests := []struct {
-		name         string
-		pickupType   int
-		dropOffType  int
-		expectPickup bool
+		name          string
+		pickupType    int
+		dropOffType   int
+		expectPickup  bool
 		expectDropOff bool
 	}{
 		{
-			name:         "Regular service",
-			pickupType:   PickupDropOffRegular,
-			dropOffType:  PickupDropOffRegular,
-			expectPickup: true,
+			name:          "Regular service",
+			pickupType:    PickupDropOffRegular,
+			dropOffType:   PickupDropOffRegular,
+			expectPickup:  true,
 			expectDropOff: true,
 		},
 		{
-			name:         "No pickup",
-			pickupType:   PickupDropOffNotAvailable,
-			dropOffType:  PickupDropOffRegular,
-			expectPickup: false,
+			name:          "No pickup",
+			pickupType:    PickupDropOffNotAvailable,
+			dropOffType:   PickupDropOffRegular,
+			expectPickup:  false,
 			expectDropOff: true,
 		},
 		{
-			name:         "No drop-off",
-			pickupType:   PickupDropOffRegular,
-			dropOffType:  PickupDropOffNotAvailable,
-			expectPickup: true,
+			name:          "No drop-off",
+			pickupType:    PickupDropOffRegular,
+			dropOffType:   PickupDropOffNotAvailable,
+			expectPickup:  true,
 			expectDropOff: false,
 		},
 		{
-			name:         "Phone agency for pickup",
-			pickupType:   PickupDropOffPhoneAgency,
-			dropOffType:  PickupDropOffRegular,
-			expectPickup: false,
+			name:          "Phone agency for pickup",
+			pickupType:    PickupDropOffPhoneAgency,
+			dropOffType:   PickupDropOffRegular,
+			expectPickup:  false,
 			expectDropOff: true,
 		},
 		{
-			name:         "Coordinate with driver for drop-off",
-			pickupType:   PickupDropOffRegular,
-			dropOffType:  PickupDropOffCoordinateWithDriver,
-			expectPickup: true,
+			name:          "Coordinate with driver for drop-off",
+			pickupType:    PickupDropOffRegular,
+			dropOffType:   PickupDropOffCoordinateWithDriver,
+			expectPickup:  true,
 			expectDropOff: false,
 		},
 	}
@@ -345,8 +345,8 @@ func TestSchedule_PickupDropOff(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			schedule := Schedule{
 				Attributes: ScheduleAttributes{
-					PickupType:   test.pickupType,
-					DropOffType:  test.dropOffType,
+					PickupType:  test.pickupType,
+					DropOffType: test.dropOffType,
 				},
 			}
 

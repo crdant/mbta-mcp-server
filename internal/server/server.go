@@ -37,7 +37,7 @@ func New(cfg *config.Config) (*Server, error) {
 	mcpServer := mcpserver.NewMCPServer(
 		"MBTA MCP Server",
 		"0.1.0", // This should eventually be dynamic
-		serverOpts...
+		serverOpts...,
 	)
 
 	// Create and return server
