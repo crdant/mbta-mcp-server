@@ -3,8 +3,8 @@ package:
   version: ${MELANGE_VERSION}
   description: "An MCP server that communicates with the MBTA API to provide Boston-area transit information"
   target-architecture:
-    - amd64
-    - arm64
+    - x86_64
+    - aarch64
 
 environment:
   contents:
