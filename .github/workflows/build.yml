@@ -140,9 +140,11 @@ jobs:
 
       - name: Create packages directory
         run: |
-          mkdir -p ./packages
+          mkdir -p ${{ env.PACKAGES_PATH }}
           echo "Created packages directory:"
-          ls -la ./packages
+          ls -la ${{ env.PACKAGES_PATH }}
+        env:
+          PACAKGES_PATH: ${{ github.workspace }}/packages
 
       - name: Build package with melange
         id: melange_build
@@ -151,69 +153,14 @@ jobs:
           config: melange.yaml
           archs: x86_64,aarch64
           sign-with-temporary-key: true
-          signing-key-path: ${{ github.workspace }}/signing.rsa
-          repository-path: ./packages
+          signing-key-path: ${{ env.KEY_PATH }}
+          repository-path: ${{ env.PACKAGES_PATH }}
           version: v0.25.1
         env:
           MELANGE_VERSION: ${{ steps.version.outputs.version }}
+          PACKAGES_PATH: ${{ github.workspace }}/packages
+          KEY_PATH: ${{ github.workspace }}/signing.rsa
 
-      - name: Verify melange build output
-        if: always()
-        run: |
-          echo "Melange build status: ${{ steps.melange_build.outcome }}"
-          echo "Checking packages directory after melange build:"
-          find ./packages -type f | sort || echo "No files found in packages directory"
-
-          # Check specifically for APK packages
-          echo "Looking for APK packages:"
-          find ./packages -name "*.apk" | sort || echo "No APK files found"
-
-          # Check the signing results
-          echo "Checking for signed APKs:"
-          find ./packages -name "*.apk.pub" | sort || echo "No signed APK files found"
-
-          # Ensure packages directory exists with correct content and permissions
-          if [ -d "./packages" ]; then
-            echo "Packages directory exists, setting permissions:"
-            chmod -R 755 ./packages
-
-            # Copy packages to workspace absolute path for apko
-            mkdir -p ${{ github.workspace }}/packages
-            cp -rv ./packages/* ${{ github.workspace }}/packages/ || echo "No files to copy"
-
-            # List the final packages directory content
-            echo "Content of workspace packages directory:"
-            ls -la ${{ github.workspace }}/packages/
-          else
-            echo "Packages directory missing after melange build, recreating:"
-            mkdir -p ./packages
-            mkdir -p ${{ github.workspace }}/packages
-            chmod -R 755 ./packages
-            chmod -R 755 ${{ github.workspace }}/packages
-          fi
-
-      - name: Show files to better debug
-        run: ls -la
-
-      - name: Debug packages directory
-        run: |
-          echo "Content of packages directory (if it exists):"
-          ls -la ./packages || echo "packages directory does not exist"
-          echo "Content of workspace:"
-          ls -la ${{ github.workspace }}
-          echo "Checking signing key:"
-          ls -la ${{ github.workspace }}/signing.rsa.pub || echo "Signing key not found"
-          echo "Checking apko.yaml file:"
-          cat apko.yaml
-
-      - name: Make packages directory absolute
-        run: |
-          echo "Ensuring packages directory path is correct..."
-          mkdir -p ${{ github.workspace }}/packages
-          chmod -R 755 ${{ github.workspace }}/packages
-          echo "PACKAGES_PATH=${{ github.workspace }}/packages" >> $GITHUB_ENV
-          echo "Packages dir content before apko:"
-          ls -la ${{ github.workspace }}/packages || echo "Empty packages directory"
 
       - name: Build image with apko
         id: apko_build
@@ -221,7 +168,7 @@ jobs:
         with:
           config: ${{ github.workspace }}/apko.yaml
           tag: ${{ fromJSON(format('["{0}"]', steps.meta.outputs.tags))[0] }}
-          keyring-append: ${{ github.workspace }}/signing.rsa.pub
+          keyring-append: ${{ env.KEY_PATH }}
           archs: x86_64,aarch64
           repository-append: ${{ env.PACKAGES_PATH }}
           sbom-path: ghcr.io/${{ github.repository }}.json
@@ -229,83 +176,8 @@ jobs:
         env:
           ACTIONS_STEP_DEBUG: true
           APKO_VERBOSITY: 3
-
-      - name: Post-apko debug info
-        if: always()
-        run: |
-          echo "APKO step status: ${{ steps.apko_build.outcome }}"
-          echo "Checking if image.tar was created:"
-          ls -la image.tar || echo "image.tar not found"
-          echo "Checking SBOM file:"
-          ls -la ghcr.io/${{ github.repository }}.json || echo "SBOM file not found"
-          echo "Checking packages directory again:"
-          ls -la ./packages || echo "packages directory does not exist"
-
-      - name: Debug apko failure
-        if: failure() && steps.apko_build.outcome == 'failure'
-        run: |
-          echo "==== APKO BUILD FAILED ===="
-          echo "Attempting to debug apko directly..."
-
-          # Install apko manually
-          echo "Installing apko using go install..."
-          go install chainguard.dev/apko@latest
-
-          # Verify apko installation
-          echo "Checking apko installation:"
-          which apko || echo "apko not found in PATH"
-
-          # If go install fails, try downloading a binary
-          if ! which apko > /dev/null; then
-            echo "Trying alternative installation method..."
-            mkdir -p apko-debug
-            cd apko-debug
-
-            # Get the latest release version
-            echo "Fetching latest apko release..."
-            APKO_VERSION=$(curl -s https://api.github.com/repos/chainguard-dev/apko/releases/latest | grep -Po '"tag_name": "v\K[^"]*')
-            echo "Latest apko version: ${APKO_VERSION}"
-
-            # Download the binary directly
-            echo "Downloading apko binary..."
-            curl -L -o apko "https://github.com/chainguard-dev/apko/releases/download/v${APKO_VERSION}/apko_${APKO_VERSION}_linux_amd64"
-            chmod +x apko
-            ./apko version || echo "Failed to run apko version"
-
-            cd ${{ github.workspace }}
-          fi
-
-          # Check PATH and GOPATH
-          echo "PATH: $PATH"
-          echo "GOPATH: $GOPATH"
-          echo "GOBIN: $(go env GOBIN)"
-          echo "All go binaries: $(ls -la $(go env GOPATH)/bin/ 2>/dev/null || echo 'No binaries found')"
-
-          # Print environment and configuration files
-          echo "Environment variables:"
-          env | sort
-
-          echo "apko.yaml content:"
-          cat ${{ github.workspace }}/apko.yaml
-
-          echo "Keyring file exists:"
-          ls -la ${{ github.workspace }}/signing.rsa.pub || echo "Signing key not found"
-
-          # Check content of packages directory
-          echo "Packages directory content:"
-          find ${{ github.workspace }}/packages -type f | sort || echo "No files found in packages directory"
-
-          # Check permissions on packages directory
-          echo "Packages directory permissions:"
-          ls -ld ${{ github.workspace }}/packages || echo "Packages directory not found"
-
-          # Create packages directory if it doesn't exist
-          if [ ! -d "${{ github.workspace }}/packages" ]; then
-            echo "Creating missing packages directory..."
-            mkdir -p ${{ github.workspace }}/packages
-            chmod -R 755 ${{ github.workspace }}/packages
-            echo "Created packages directory. This suggests it was missing during the apko build."
-          fi
+          PACKAGES_PATH: ${{ github.workspace }}/packages
+          KEY_PATH: ${{ github.workspace }}/signing.rsa.pub
 
       - name: Push image
         if: github.event_name != 'pull_request'
