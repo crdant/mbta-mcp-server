@@ -1,4 +1,7 @@
 contents:
+  repositories:
+    - https://packages.wolfi.dev/os
+    - "@local ./packages"
   packages:
     - ca-certificates-bundle
     - mbta-mcp-server@local
