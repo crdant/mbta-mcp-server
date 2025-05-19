@@ -138,13 +138,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create packages directory
+      - name: Setup build paths
+        id: setup_build_paths
         run: |
-          mkdir -p ${{ env.PACKAGES_PATH }}
-          echo "Created packages directory:"
-          ls -la ${{ env.PACKAGES_PATH }}
+          mkdir -p ${PACKAGES_PATH}
+          echo "packages_path=${PACKAGES_PATH}" >> $GITHUB_OUTPUT
+          echo "privkey_path=${KEY_PATH}" >> $GITHUB_OUTPUT
+          echo "pubkey_path=${KEY_PATH}.pub" >> $GITHUB_OUTPUT
         env:
           PACAKGES_PATH: ${{ github.workspace }}/packages
+          KEY_PATH: ${{ github.workspace }}/signing.rsa
 
       - name: Build package with melange
         id: melange_build
@@ -153,13 +156,11 @@ jobs:
           config: melange.yaml
           archs: x86_64,aarch64
           sign-with-temporary-key: true
-          signing-key-path: ${{ env.KEY_PATH }}
-          repository-path: ${{ env.PACKAGES_PATH }}
+          signing-key-path: ${{ steps.setup_build_paths.outputs.privkey_path }}
+          repository-path: ${{ steps.setup_build_paths.outputs.packages_path }}
           version: v0.25.1
         env:
           MELANGE_VERSION: ${{ steps.version.outputs.version }}
-          PACKAGES_PATH: ${{ github.workspace }}/packages
-          KEY_PATH: ${{ github.workspace }}/signing.rsa
 
 
       - name: Build image with apko
@@ -170,14 +171,13 @@ jobs:
           tag: ${{ fromJSON(format('["{0}"]', steps.meta.outputs.tags))[0] }}
           keyring-append: ${{ env.KEY_PATH }}
           archs: x86_64,aarch64
-          repository-append: ${{ env.PACKAGES_PATH }}
+          keyring-append: ${{ steps.setup_build_paths.outputs.pubkey_path }}
+          repository-append: ${{ steps.setup_build_paths.outputs.packages_path }}
           sbom-path: ghcr.io/${{ github.repository }}.json
           image_refs: image.tar
         env:
           ACTIONS_STEP_DEBUG: true
           APKO_VERBOSITY: 3
-          PACKAGES_PATH: ${{ github.workspace }}/packages
-          KEY_PATH: ${{ github.workspace }}/signing.rsa.pub
 
       - name: Push image
         if: github.event_name != 'pull_request'
