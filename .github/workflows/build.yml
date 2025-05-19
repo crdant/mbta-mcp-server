@@ -163,14 +163,33 @@ jobs:
           echo "Melange build status: ${{ steps.melange_build.outcome }}"
           echo "Checking packages directory after melange build:"
           find ./packages -type f | sort || echo "No files found in packages directory"
-          # Ensure packages directory exists and has proper permissions
+
+          # Check specifically for APK packages
+          echo "Looking for APK packages:"
+          find ./packages -name "*.apk" | sort || echo "No APK files found"
+
+          # Check the signing results
+          echo "Checking for signed APKs:"
+          find ./packages -name "*.apk.pub" | sort || echo "No signed APK files found"
+
+          # Ensure packages directory exists with correct content and permissions
           if [ -d "./packages" ]; then
+            echo "Packages directory exists, setting permissions:"
             chmod -R 755 ./packages
-            echo "Set permissions on packages directory"
+
+            # Copy packages to workspace absolute path for apko
+            mkdir -p ${{ github.workspace }}/packages
+            cp -rv ./packages/* ${{ github.workspace }}/packages/ || echo "No files to copy"
+
+            # List the final packages directory content
+            echo "Content of workspace packages directory:"
+            ls -la ${{ github.workspace }}/packages/
           else
             echo "Packages directory missing after melange build, recreating:"
             mkdir -p ./packages
+            mkdir -p ${{ github.workspace }}/packages
             chmod -R 755 ./packages
+            chmod -R 755 ${{ github.workspace }}/packages
           fi
 
       - name: Show files to better debug
@@ -187,19 +206,29 @@ jobs:
           echo "Checking apko.yaml file:"
           cat apko.yaml
 
+      - name: Make packages directory absolute
+        run: |
+          echo "Ensuring packages directory path is correct..."
+          mkdir -p ${{ github.workspace }}/packages
+          chmod -R 755 ${{ github.workspace }}/packages
+          echo "PACKAGES_PATH=${{ github.workspace }}/packages" >> $GITHUB_ENV
+          echo "Packages dir content before apko:"
+          ls -la ${{ github.workspace }}/packages || echo "Empty packages directory"
+
       - name: Build image with apko
         id: apko_build
         uses: chainguard-images/actions/apko-publish@main
         with:
-          config: apko.yaml
+          config: ${{ github.workspace }}/apko.yaml
           tag: ${{ fromJSON(format('["{0}"]', steps.meta.outputs.tags))[0] }}
           keyring-append: ${{ github.workspace }}/signing.rsa.pub
           archs: x86_64,aarch64
-          repository-append: ./packages
+          repository-append: ${{ env.PACKAGES_PATH }}
           sbom-path: ghcr.io/${{ github.repository }}.json
           image_refs: image.tar
         env:
           ACTIONS_STEP_DEBUG: true
+          APKO_VERBOSITY: 3
 
       - name: Post-apko debug info
         if: always()
