@@ -140,7 +140,7 @@ jobs:
           archs: x86_64,aarch64
           sign-with-temporary-key: true
           signing-key-path: tmp-melange.key
-          keyring-append: tmp-melange.pub
+          keyring-append: tmp-melange.key.pub
           repository-path: ./packages
           version: v0.25.1
         env:
@@ -151,7 +151,7 @@ jobs:
         with:
           config: apko.yaml
           tag: ${{ fromJSON(format('["{0}"]', steps.meta.outputs.tags))[0] }}
-          keyring-append: tmp-melange.pub
+          keyring-append: tmp-melange.key.pub
           archs: x86_64,aarch64
           repository-append: ./packages
           sbom-path: ghcr.io/${{ github.repository }}.json
