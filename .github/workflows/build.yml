@@ -133,12 +133,6 @@ jobs:
       - name: Create packages directory
         run: mkdir -p ./packages
 
-      - name: Run chainguard-dev/actions/melange-keygen
-        uses: chainguard-dev/actions/melange-keygen@0cda751b114eb55c388e88f7479292668165602a
-
-      - name: Run melange keygen manually
-        run: sudo melange keygen tmp-melange.key
-
       - name: Build package with melange
         uses: chainguard-dev/actions/melange-build@v1.0.8
         with:
