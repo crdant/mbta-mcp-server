@@ -17,8 +17,17 @@ environment:
       - ca-certificates-bundle
       - build-base
       - go
+      - busybox
+      - bash
 
 pipeline:
+  - name: Setup Environment
+    runs: |
+      #!/bin/sh
+      echo "Setting up build environment"
+      which sh
+      ls -la /bin || true
+
   - name: Build mbta-mcp-server
     runs: |
       export CGO_ENABLED=0
