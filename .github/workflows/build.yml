@@ -133,6 +133,11 @@ jobs:
       - name: Create packages directory
         run: mkdir -p ./packages
 
+      - name: Make key accessible
+        run: |
+          ls -la tmp-melange.key.pub || echo "Key not found"
+          cp tmp-melange.key.pub ./packages/ || echo "Failed to copy key"
+
       - name: Build package with melange
         uses: chainguard-dev/actions/melange-build@v1.0.8
         with:
