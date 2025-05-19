@@ -16,6 +16,14 @@ permissions:
   security-events: write  # Required for uploading SARIF results to GitHub Security tab
   actions: read  # Required for SBOM attestation
 
+env:
+  # Enable verbose debug output for GitHub Actions
+  ACTIONS_RUNNER_DEBUG: true
+  ACTIONS_STEP_DEBUG: true
+  # Enable debug mode for apko and melange
+  APKO_VERBOSITY: 3  # Maximum debug verbosity
+  MELANGE_VERBOSITY: 3  # Maximum debug verbosity
+
 jobs:
   build:
     name: Build, Test, and Package
@@ -131,9 +139,13 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create packages directory
-        run: mkdir -p ./packages
+        run: |
+          mkdir -p ./packages
+          echo "Created packages directory:"
+          ls -la ./packages
 
       - name: Build package with melange
+        id: melange_build
         uses: chainguard-dev/actions/melange-build@v1.0.8
         with:
           config: melange.yaml
@@ -145,10 +157,38 @@ jobs:
         env:
           MELANGE_VERSION: ${{ steps.version.outputs.version }}
 
+      - name: Verify melange build output
+        if: always()
+        run: |
+          echo "Melange build status: ${{ steps.melange_build.outcome }}"
+          echo "Checking packages directory after melange build:"
+          find ./packages -type f | sort || echo "No files found in packages directory"
+          # Ensure packages directory exists and has proper permissions
+          if [ -d "./packages" ]; then
+            chmod -R 755 ./packages
+            echo "Set permissions on packages directory"
+          else
+            echo "Packages directory missing after melange build, recreating:"
+            mkdir -p ./packages
+            chmod -R 755 ./packages
+          fi
+
       - name: Show files to better debug
         run: ls -la
 
+      - name: Debug packages directory
+        run: |
+          echo "Content of packages directory (if it exists):"
+          ls -la ./packages || echo "packages directory does not exist"
+          echo "Content of workspace:"
+          ls -la ${{ github.workspace }}
+          echo "Checking signing key:"
+          ls -la ${{ github.workspace }}/signing.rsa.pub || echo "Signing key not found"
+          echo "Checking apko.yaml file:"
+          cat apko.yaml
+
       - name: Build image with apko
+        id: apko_build
         uses: chainguard-images/actions/apko-publish@main
         with:
           config: apko.yaml
@@ -158,6 +198,54 @@ jobs:
           repository-append: ./packages
           sbom-path: ghcr.io/${{ github.repository }}.json
           image_refs: image.tar
+        env:
+          ACTIONS_STEP_DEBUG: true
+
+      - name: Post-apko debug info
+        if: always()
+        run: |
+          echo "APKO step status: ${{ steps.apko_build.outcome }}"
+          echo "Checking if image.tar was created:"
+          ls -la image.tar || echo "image.tar not found"
+          echo "Checking SBOM file:"
+          ls -la ghcr.io/${{ github.repository }}.json || echo "SBOM file not found"
+          echo "Checking packages directory again:"
+          ls -la ./packages || echo "packages directory does not exist"
+
+      - name: Debug apko failure
+        if: failure() && steps.apko_build.outcome == 'failure'
+        run: |
+          echo "==== APKO BUILD FAILED ===="
+          echo "Attempting to run apko directly for more detailed error information..."
+
+          # Install apko manually to run with debug flags
+          echo "Installing apko..."
+          mkdir -p apko-debug
+          cd apko-debug
+          APKO_VERSION="0.13.1"
+          curl -L -o apko.tar.gz https://github.com/chainguard-dev/apko/releases/download/v${APKO_VERSION}/apko_${APKO_VERSION}_linux_amd64.tar.gz
+          tar -xzf apko.tar.gz
+          chmod +x apko
+
+          echo "Running apko with full debug output..."
+          ./apko --debug build \
+            --archs x86_64,aarch64 \
+            --keyring-append ${{ github.workspace }}/signing.rsa.pub \
+            --repository-append ${{ github.workspace }}/packages \
+            ${{ github.workspace }}/apko.yaml \
+            debug-image \
+            debug-image.tar || echo "Direct apko run also failed"
+
+          # Check content of packages directory
+          echo "Packages directory content:"
+          find ${{ github.workspace }}/packages -type f -name "*.apk" | sort || echo "No APK files found"
+
+          # Create packages directory if it doesn't exist
+          if [ ! -d "${{ github.workspace }}/packages" ]; then
+            echo "Creating missing packages directory..."
+            mkdir -p ${{ github.workspace }}/packages
+            echo "Created packages directory. This suggests it was missing during the apko build."
+          fi
 
       - name: Push image
         if: github.event_name != 'pull_request'
