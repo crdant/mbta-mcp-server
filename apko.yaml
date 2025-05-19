@@ -4,7 +4,7 @@ contents:
     - "@local ./packages"
   keyring:
     - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
-    - melange.rsa.pub
+    - tmp-melange.key.pub
   packages:
     - ca-certificates-bundle
     - mbta-mcp-server@local
