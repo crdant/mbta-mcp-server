@@ -146,7 +146,7 @@ jobs:
           echo "privkey_path=${KEY_PATH}" >> $GITHUB_OUTPUT
           echo "pubkey_path=${KEY_PATH}.pub" >> $GITHUB_OUTPUT
         env:
-          PACAKGES_PATH: ${{ github.workspace }}/packages
+          PACKAGES_PATH: ${{ github.workspace }}/packages
           KEY_PATH: ${{ github.workspace }}/signing.rsa
 
       - name: Build package with melange
