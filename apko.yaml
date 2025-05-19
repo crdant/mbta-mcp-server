@@ -35,5 +35,5 @@ paths:
     gid: 10001
 
 archs:
-  - x86_64
-  - aarch64
+  - amd64
+  - arm64
