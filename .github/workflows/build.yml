@@ -216,34 +216,65 @@ jobs:
         if: failure() && steps.apko_build.outcome == 'failure'
         run: |
           echo "==== APKO BUILD FAILED ===="
-          echo "Attempting to run apko directly for more detailed error information..."
+          echo "Attempting to debug apko directly..."
 
-          # Install apko manually to run with debug flags
-          echo "Installing apko..."
-          mkdir -p apko-debug
-          cd apko-debug
-          APKO_VERSION="0.13.1"
-          curl -L -o apko.tar.gz https://github.com/chainguard-dev/apko/releases/download/v${APKO_VERSION}/apko_${APKO_VERSION}_linux_amd64.tar.gz
-          tar -xzf apko.tar.gz
-          chmod +x apko
+          # Install apko manually
+          echo "Installing apko using go install..."
+          go install chainguard.dev/apko@latest
 
-          echo "Running apko with full debug output..."
-          ./apko --debug build \
-            --archs x86_64,aarch64 \
-            --keyring-append ${{ github.workspace }}/signing.rsa.pub \
-            --repository-append ${{ github.workspace }}/packages \
-            ${{ github.workspace }}/apko.yaml \
-            debug-image \
-            debug-image.tar || echo "Direct apko run also failed"
+          # Verify apko installation
+          echo "Checking apko installation:"
+          which apko || echo "apko not found in PATH"
+
+          # If go install fails, try downloading a binary
+          if ! which apko > /dev/null; then
+            echo "Trying alternative installation method..."
+            mkdir -p apko-debug
+            cd apko-debug
+
+            # Get the latest release version
+            echo "Fetching latest apko release..."
+            APKO_VERSION=$(curl -s https://api.github.com/repos/chainguard-dev/apko/releases/latest | grep -Po '"tag_name": "v\K[^"]*')
+            echo "Latest apko version: ${APKO_VERSION}"
+
+            # Download the binary directly
+            echo "Downloading apko binary..."
+            curl -L -o apko "https://github.com/chainguard-dev/apko/releases/download/v${APKO_VERSION}/apko_${APKO_VERSION}_linux_amd64"
+            chmod +x apko
+            ./apko version || echo "Failed to run apko version"
+
+            cd ${{ github.workspace }}
+          fi
+
+          # Check PATH and GOPATH
+          echo "PATH: $PATH"
+          echo "GOPATH: $GOPATH"
+          echo "GOBIN: $(go env GOBIN)"
+          echo "All go binaries: $(ls -la $(go env GOPATH)/bin/ 2>/dev/null || echo 'No binaries found')"
+
+          # Print environment and configuration files
+          echo "Environment variables:"
+          env | sort
+
+          echo "apko.yaml content:"
+          cat ${{ github.workspace }}/apko.yaml
+
+          echo "Keyring file exists:"
+          ls -la ${{ github.workspace }}/signing.rsa.pub || echo "Signing key not found"
 
           # Check content of packages directory
           echo "Packages directory content:"
-          find ${{ github.workspace }}/packages -type f -name "*.apk" | sort || echo "No APK files found"
+          find ${{ github.workspace }}/packages -type f | sort || echo "No files found in packages directory"
+
+          # Check permissions on packages directory
+          echo "Packages directory permissions:"
+          ls -ld ${{ github.workspace }}/packages || echo "Packages directory not found"
 
           # Create packages directory if it doesn't exist
           if [ ! -d "${{ github.workspace }}/packages" ]; then
             echo "Creating missing packages directory..."
             mkdir -p ${{ github.workspace }}/packages
+            chmod -R 755 ${{ github.workspace }}/packages
             echo "Created packages directory. This suggests it was missing during the apko build."
           fi
 
