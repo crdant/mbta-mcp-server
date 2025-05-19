@@ -169,7 +169,6 @@ jobs:
         with:
           config: ${{ github.workspace }}/apko.yaml
           tag: ${{ fromJSON(format('["{0}"]', steps.meta.outputs.tags))[0] }}
-          keyring-append: ${{ env.KEY_PATH }}
           archs: x86_64,aarch64
           keyring-append: ${{ steps.setup_build_paths.outputs.pubkey_path }}
           repository-append: ${{ steps.setup_build_paths.outputs.packages_path }}
