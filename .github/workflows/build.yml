@@ -145,6 +145,9 @@ jobs:
         env:
           MELANGE_VERSION: ${{ steps.version.outputs.version }}
 
+      - name: Show files to better debug
+        run: ls -la
+
       - name: Build image with apko
         uses: chainguard-images/actions/apko-publish@main
         with:
