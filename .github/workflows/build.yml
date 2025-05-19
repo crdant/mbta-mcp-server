@@ -130,6 +130,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create packages directory
+        run: mkdir -p ./packages
+
       - name: Build package with melange
         uses: chainguard-dev/actions/melange-build@v1.0.8
         with:
@@ -141,6 +144,8 @@ jobs:
           out-dir: ./packages
           repository-append: ./packages
           version: v0.25.1
+        env:
+          MELANGE_VERSION: ${{ steps.version.outputs.version }}
 
       - name: Build image with apko
         uses: chainguard-dev/actions/apko-build@v1.0.8
