@@ -148,7 +148,7 @@ jobs:
           MELANGE_VERSION: ${{ steps.version.outputs.version }}
 
       - name: Build image with apko
-        uses: chainguard-dev/actions/apko-build@v1.0.8
+        uses: chainguard-images/actions/apko-publish@main
         with:
           config: apko.yaml
           tag: ${{ fromJSON(format('["{0}"]', steps.meta.outputs.tags))[0] }}
