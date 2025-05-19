@@ -2,6 +2,8 @@ contents:
   repositories:
     - https://packages.wolfi.dev/os
     - "@local ./packages"
+  keyring:
+    - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
   packages:
     - ca-certificates-bundle
     - mbta-mcp-server@local
