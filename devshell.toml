@@ -12,50 +12,41 @@ Commands:
 Environment setup is handled by Nix flake and direnv.
 """
 
-[[commands]]
-package = "go"
+[[packages]]
 name = "go"
 help = "Go programming language"
 
-[[commands]]
-package = "golangci-lint"
+[[packages]]
 name = "golangci-lint"
 help = "Go linters runner"
 
-[[commands]]
-package = "goreleaser"
+[[packages]]
 name = "goreleaser"
 help = "Release automation tool for Go projects"
 
-[[commands]]
-package = "melange"
+[[packages]]
 name = "melange"
 help = "Build APK packages from source"
 
-[[commands]]
-package = "apko"
+[[packages]]
 name = "apko"
 help = "Build OCI images from APK packages"
 
-[[commands]]
-package = "crane"
+[[packages]]
 name = "crane"
 help = "Tool for interacting with remote images and registries"
 
-[[commands]]
-package = "cosign"
+[[packages]]
 name = "cosign"
 help = "Container signing and verification"
 
-[[commands]]
-name = "semver"
-package = "semver-cli"
+[[packages]]
+name = "semver-cli"
 category = "version management"
 help = "Semantic versioning CLI tool from maykonlsf/semver-cli"
 
-[[commands]]
-name = "qemu"
-package = "qemu_full"
+[[packages]]
+name = "qemu_full"
 category = "virtualization"
 help = "QEMU virtual machine emulator"
 
