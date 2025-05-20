@@ -2,7 +2,8 @@ BINARY_NAME=mbta-mcp-server
 GIT_SHORT_SHA=$(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 # Get the version from semver-cli, removing any 'v' prefix if present
 VERSION=$(shell semver get release 2>/dev/null | sed 's/^v//' || echo "0.1.0")
-BUILD_VERSION=$(VERSION)+build.$(GIT_SHORT_SHA)
+# Create a build version that's compatible with container image tags (no '+' character)
+BUILD_VERSION=$(VERSION)-build.$(GIT_SHORT_SHA)
 MAIN_PACKAGE=./cmd/server
 GO_FILES=$(shell find . -name '*.go' -not -path "./vendor/*")
 LDFLAGS=-ldflags "-X main.Version=$(BUILD_VERSION)"

@@ -63,9 +63,9 @@ jobs:
             VERSION="${{ github.ref_name }}"
             VERSION=${VERSION#v} # Remove v prefix
           elif [[ "${{ github.ref }}" == refs/heads/main ]]; then
-            VERSION="$BASE_VERSION+build.$GIT_SHORT_SHA"
+            VERSION="$BASE_VERSION-build.$GIT_SHORT_SHA"
           else
-            VERSION="$BASE_VERSION+build.$GIT_SHORT_SHA"
+            VERSION="$BASE_VERSION-build.$GIT_SHORT_SHA"
           fi
 
           echo "VERSION=$VERSION" >> $GITHUB_ENV
