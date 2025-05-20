@@ -6,6 +6,9 @@ BUILD_VERSION=$(VERSION)+build.$(GIT_SHORT_SHA)
 MAIN_PACKAGE=./cmd/server
 GO_FILES=$(shell find . -name '*.go' -not -path "./vendor/*")
 LDFLAGS=-ldflags "-X main.Version=$(BUILD_VERSION)"
+ARCHS=x86_64
+KEYFILE=melange.rsa
+KEYSIZE=4096
 
 # Container runtime to use (docker, nerdctl, or podman)
 # Can be overridden with either:
@@ -83,26 +86,27 @@ fmt:
 run:
 	@go run $(LDFLAGS) $(MAIN_PACKAGE)
 
+$(KEYFILE):
+	melange keygen --key-size $(KEYSIZE)
+
 # OCI image targets
-package:
+package: $(KEYFILE)
 	@mkdir -p ./packages
-	@melange build --arch amd64,arm64 \
-		--signing-key melange.rsa \
-		--keyring-append melange.rsa.pub \
+	@VERSION=$(VERSION) melange build --arch $(ARCHS) \
+		--signing-key $(KEYFILE) \
+		--keyring-append $(KEYFILE).pub \
 		--out-dir ./packages \
 		--repository-append ./packages \
-		--version $(VERSION) \
-		melange.yaml
+		melange.yaml --debug
 
 image: package
 	@apko build \
-		--keyring melange.rsa.pub \
-		--arch amd64,arm64 \
-		--repository ./packages \
+		--arch $(ARCHS) \
+		--keyring-append $(KEYFILE).pub \
+		--repository-append ./packages \
 		apko.yaml \
 		$(BINARY_NAME):$(VERSION) \
-		image.tar \
-		sbom.json
+		image.tar
 
 container: image
 	@$(CONTAINER_RUNTIME) load < image.tar

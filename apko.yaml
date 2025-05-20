@@ -1,7 +1,11 @@
 contents:
+  repositories:
+    - https://packages.wolfi.dev/os
+  keyring:
+    - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
   packages:
+    - wolfi-baselayout
     - ca-certificates-bundle
-    - mbta-mcp-server@local
 
 entrypoint:
   command: /usr/bin/mbta-mcp-server
@@ -30,5 +34,5 @@ paths:
     gid: 10001
 
 archs:
-  - amd64
-  - arm64
+  - x86_64
+  - aarch64
