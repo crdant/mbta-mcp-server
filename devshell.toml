@@ -53,6 +53,12 @@ package = "semver-cli"
 category = "version management"
 help = "Semantic versioning CLI tool from maykonlsf/semver-cli"
 
+[[commands]]
+name = "qemu"
+package = "qemu_full"
+category = "virtualization"
+help = "QEMU virtual machine emulator"
+
 [[env]]
 # Development environment variables
 name = "ENVIRONMENT"

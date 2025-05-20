@@ -52,12 +52,13 @@
             cosign
             gnumake
             semver-cli  # Add the semver-cli package we defined
+            openssl
+            coreutils   # Provides mkdir, rm and other basic tools
+            qemu_full    # Provides all the QEMU packages needed for cross-architecture builds
             # Container runtimes (users can choose their preference)
             docker
             nerdctl
             podman
-            openssl
-            coreutils   # Provides mkdir, rm and other basic tools
           ];
           env = [
             {
