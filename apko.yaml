@@ -1,8 +1,6 @@
 contents:
   repositories:
     - https://packages.wolfi.dev/os
-    # Use an absolute path reference to local packages
-    - "@local /github/workspace/packages"
   keyring:
     - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
   packages:
