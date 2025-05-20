@@ -220,18 +220,14 @@ make all
 ### Container Image
 
 ```bash
-# Generate signing keys (first time only)
-make keys
-
-# Build package with melange
-make package
-
-# Build OCI image with apko
+# Build OCI image with ko
 make image
 
 # Run in container
 make container
 ```
+
+Ko is used for container image building. It simplifies the process by directly building from Go source code without intermediate steps.
 
 ## Architecture Overview
 

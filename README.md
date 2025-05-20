@@ -44,6 +44,14 @@ For more detailed information, see the [specification](spec.md).
 
 ## Supply Chain Security
 
+We've migrated from the melange/apko build process to ko, a specialized container builder for Go applications. This provides:
+
+- Simpler, more reliable builds
+- Fast container image creation directly from Go source
+- Smaller, more secure container images
+- Built-in SBOM generation
+- Continued multi-platform support (amd64, arm64)
+
 ### Container Image Signing
 
 All container images are signed using Sigstore's Cosign with keyless signing. This allows users to verify that the container image was built by our GitHub Actions CI/CD pipeline.

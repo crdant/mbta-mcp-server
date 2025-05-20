@@ -1,0 +1,9 @@
+defaultBaseImage: gcr.io/distroless/static:nonroot
+builds:
+  - id: mbta-mcp-server
+    main: ./cmd/server
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+      - -X main.Version={{.Env.VERSION}}

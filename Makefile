@@ -83,33 +83,15 @@ fmt:
 run:
 	@go run $(LDFLAGS) $(MAIN_PACKAGE)
 
-# OCI image targets
+# OCI image targets with ko
 package:
-	@mkdir -p ./packages
-	@melange build --arch amd64,arm64 \
-		--signing-key melange.rsa \
-		--keyring-append melange.rsa.pub \
-		--out-dir ./packages \
-		--repository-append ./packages \
-		--version $(VERSION) \
-		melange.yaml
+	@echo "Ko handles packaging automatically, this target kept for compatibility"
 
-image: package
-	@apko build \
-		--keyring melange.rsa.pub \
-		--arch amd64,arm64 \
-		--repository ./packages \
-		apko.yaml \
-		$(BINARY_NAME):$(VERSION) \
-		image.tar \
-		sbom.json
+image:
+	@VERSION=$(BUILD_VERSION) ko build --sbom=spdx --bare --platform=linux/amd64,linux/arm64 $(MAIN_PACKAGE) -t $(VERSION)
 
-container: image
-	@$(CONTAINER_RUNTIME) load < image.tar
-	@$(CONTAINER_RUNTIME) run --rm -e MBTA_API_KEY -p 8080:8080 $(BINARY_NAME):$(VERSION)
+container:
+	@VERSION=$(BUILD_VERSION) KO_DOCKER_REPO=ko.local ko build --sbom=spdx --local $(MAIN_PACKAGE)
+	@$(CONTAINER_RUNTIME) run --rm -e MBTA_API_KEY -p 8080:8080 ko.local/$(BINARY_NAME):latest
 
-keys:
-	@if [ ! -f melange.rsa ]; then \
-		openssl genrsa -out melange.rsa 4096; \
-		openssl rsa -in melange.rsa -pubout -out melange.rsa.pub; \
-	fi
+# keys target removed as ko doesn't require signing keys

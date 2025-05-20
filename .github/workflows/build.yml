@@ -138,67 +138,61 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup build paths
-        id: setup_build_paths
+      - name: Install ko
         run: |
-          mkdir -p ${PACKAGES_PATH}
-          echo "packages_path=${PACKAGES_PATH}" >> $GITHUB_OUTPUT
-          echo "privkey_path=${KEY_PATH}" >> $GITHUB_OUTPUT
-          echo "pubkey_path=${KEY_PATH}.pub" >> $GITHUB_OUTPUT
-        env:
-          PACKAGES_PATH: ${{ github.workspace }}/packages
-          KEY_PATH: ${{ github.workspace }}/signing.rsa
+          # Install ko
+          echo "Installing ko..."
+          go install github.com/google/ko@latest
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
-      - name: Build package with melange
-        id: melange_build
-        uses: chainguard-dev/actions/melange-build@v1.0.8
-        with:
-          config: melange.yaml
-          archs: x86_64,aarch64
-          sign-with-temporary-key: true
-          signing-key-path: ${{ steps.setup_build_paths.outputs.privkey_path }}
-          repository-path: ${{ steps.setup_build_paths.outputs.packages_path }}
-          version: v0.25.1
-        env:
-          MELANGE_VERSION: ${{ steps.version.outputs.version }}
+      - name: Build and push with ko
+        id: ko_build
+        run: |
+          # Set up ko environment
+          export KO_DOCKER_REPO=ghcr.io/${{ github.repository }}
+          export VERSION=${{ steps.version.outputs.version }}
 
+          # Build the image with ko and output to a local tar file for scanning
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # For pull requests, just build locally but don't push
+            echo "Building image locally for PR..."
+            ko build --sbom=spdx --bare --local --platform=linux/amd64,linux/arm64 ./cmd/server -t $VERSION
+            ko save --sbom=spdx --bare --platform=linux/amd64,linux/arm64 ./cmd/server -t $VERSION --oci-layout-path ./image-layout
+          else
+            # For main branch and tags, build and push
+            echo "Building and pushing image..."
+            ko build --sbom=spdx --bare --platform=linux/amd64,linux/arm64 ./cmd/server -t $VERSION
+            # Save SBOM for use in later steps
+            ko save --sbom=spdx --bare --platform=linux/amd64,linux/arm64 ./cmd/server -t $VERSION --oci-layout-path ./image-layout
+          fi
 
-      - name: Build image with apko
-        id: apko_build
-        uses: chainguard-images/actions/apko-publish@main
-        with:
-          config: ${{ github.workspace }}/apko.yaml
-          tag: ${{ fromJSON(format('["{0}"]', steps.meta.outputs.tags))[0] }}
-          archs: x86_64,aarch64
-          keyring-append: ${{ steps.setup_build_paths.outputs.pubkey_path }}
-          repository-append: "@local ${{ steps.setup_build_paths.outputs.packages_path }}"
-          sbom-path: ghcr.io/${{ github.repository }}.json
-          image_refs: image.tar
-        env:
-          ACTIONS_STEP_DEBUG: true
-          APKO_VERBOSITY: 3
+          # Export the SBOM for later use
+          cp ./image-layout/sbom-*.json ghcr.io/${{ github.repository }}.json
 
-      - name: Push image
+      - name: Tag additional versions
         if: github.event_name != 'pull_request'
         run: |
-          # Create an array of docker tags from metadata-action output
+          # Ko already pushed the image with the VERSION tag
+          # We just need to add additional tags if needed
+
+          # Get the image reference that ko just pushed
+          KO_IMAGE_REF="ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}"
+          IMAGE_DIGEST=$(crane digest ${KO_IMAGE_REF})
+
+          # Create tags from metadata action output
           readarray -t DOCKER_TAGS <<< "${{ steps.meta.outputs.tags }}"
 
-          # Get the first tag to use as reference for copying to other tags
-          FIRST_TAG=${DOCKER_TAGS[0]}
-
-          # Push the image using the first tag
-          crane push image.tar ${FIRST_TAG}
-
-          # Copy the image to all other tags
+          # Tag with additional tags (skipping the first one which is already handled by ko)
           for TAG in "${DOCKER_TAGS[@]:1}"; do
-            crane copy ${FIRST_TAG} ${TAG}
-            echo "Pushed ${TAG}"
+            if [[ "${TAG}" != "${KO_IMAGE_REF}" ]]; then
+              crane copy ${KO_IMAGE_REF} ${TAG}
+              echo "Tagged with ${TAG}"
+            fi
           done
 
           # Explicitly tag as latest if on main branch
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            crane tag ${FIRST_TAG} ghcr.io/${{ github.repository }}:latest
+            crane tag ${KO_IMAGE_REF} ghcr.io/${{ github.repository }}:latest
             echo "Tagged as latest"
           fi
 
@@ -207,10 +201,11 @@ jobs:
         env:
           COSIGN_EXPERIMENTAL: "true"
         run: |
+          # Get the image reference that ko pushed
+          KO_IMAGE_REF="ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}"
+
           # Get the image digest (immutable content hash)
-          # Use the first tag to look up the digest
-          FIRST_TAG=$(echo '${{ steps.meta.outputs.tags }}' | head -n 1)
-          IMAGE_DIGEST=$(crane digest ${FIRST_TAG})
+          IMAGE_DIGEST=$(crane digest ${KO_IMAGE_REF})
           echo "Image digest: ${IMAGE_DIGEST}"
 
           # Sign the image by digest only (immutable reference)
@@ -226,10 +221,11 @@ jobs:
         env:
           COSIGN_EXPERIMENTAL: "true"
         run: |
+          # Get the image reference that ko pushed
+          KO_IMAGE_REF="ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}"
+
           # Get the image digest (immutable content hash)
-          # Use the first tag to look up the digest
-          FIRST_TAG=$(echo '${{ steps.meta.outputs.tags }}' | head -n 1)
-          IMAGE_DIGEST=$(crane digest ${FIRST_TAG})
+          IMAGE_DIGEST=$(crane digest ${KO_IMAGE_REF})
 
           # Verify only the digest-based signature
           IMAGE_REF="ghcr.io/${{ github.repository }}@${IMAGE_DIGEST}"
@@ -251,7 +247,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ fromJSON(format('["{0}"]', steps.meta.outputs.tags))[0] }}
+          image-ref: "ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}"
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
