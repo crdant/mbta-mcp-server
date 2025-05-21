@@ -43,21 +43,14 @@
         devShells.default = pkgs.devshell.mkShell {
           imports = [ (pkgs.devshell.importTOML ./devshell.toml) ];
           packages = with pkgs; [
-            go
-            golangci-lint
-            goreleaser
-            apko
-            melange
-            crane
-            cosign
+            # Only include packages not defined in devshell.toml
             gnumake
-            semver-cli  # Add the semver-cli package we defined
+            openssl
+            coreutils   # Provides mkdir, rm and other basic tools
             # Container runtimes (users can choose their preference)
             docker
             nerdctl
             podman
-            openssl
-            coreutils   # Provides mkdir, rm and other basic tools
           ];
           env = [
             {
