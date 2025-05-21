@@ -1,17 +1,21 @@
 package:
   name: mbta-mcp-server
-  version: ${{version}}
+  version: ${VERSION}
   description: "An MCP server that communicates with the MBTA API to provide Boston-area transit information"
   target-architecture:
-    - amd64
-    - arm64
+    - x86_64
+    - aarch64
 
 environment:
   contents:
+    repositories:
+      - https://packages.wolfi.dev/os
+    keyring:
+      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
     packages:
-      - alpine-baselayout-data
       - ca-certificates-bundle
-      - build-base
+      - busybox
+      - git
       - go
 
 pipeline:
