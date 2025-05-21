@@ -1,3 +1,5 @@
+include .env
+
 BINARY_NAME=mbta-mcp-server
 GIT_SHORT_SHA=$(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 # Get the version from semver-cli, removing any 'v' prefix if present
@@ -6,7 +8,7 @@ BUILD_VERSION=$(VERSION)+build.$(GIT_SHORT_SHA)
 MAIN_PACKAGE=./cmd/server
 GO_FILES=$(shell find . -name '*.go' -not -path "./vendor/*")
 LDFLAGS=-ldflags "-X main.Version=$(BUILD_VERSION)"
-ARCHS=x86_64
+ARCHS ?= x86_64 # ,aarch64
 KEYFILE=melange.rsa
 KEYSIZE=4096
 
