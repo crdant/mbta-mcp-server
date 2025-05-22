@@ -144,7 +144,7 @@ jobs:
           echo "image=image.tar" >> $GITHUB_OUTPUT
 
       - name: Build package with melange
-        uses: chainguard-dev/actions/melange-build@v1.0.8
+        uses: chainguard-images/actions/melange-build@v1.0.0
         with:
           config: melange.yaml
           archs: ${{ steps.prepare-build-vars.outputs.archs }}
