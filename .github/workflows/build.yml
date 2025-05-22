@@ -130,28 +130,41 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Prepare shared environment
+        id: prepare-build-vars
+        run: |
+          # Create a temporary keyring for melange
+          echo "private_key=melange.key" >> $GITHUB_OUTPUT
+          echo "public_key=melange.pub" >> $GITHUB_OUTPUT
+          echo "package_repository=./packages" >> $GITHUB_OUTPUT
+          echo "arch=x86_64,aarch64" >> $GITHUB_OUTPUT
+          echo "sbom_path=ghcr.io/${{ github.repository }}.json" >> $GITHUB_OUTPUT
+          echo "image=image.tar" >> $GITHUB_OUTPUT
+
       - name: Build package with melange
         uses: chainguard-dev/actions/melange-build@v1.0.8
         with:
           config: melange.yaml
-          archs: amd64,arm64
+          archs: ${{ steps.prepare-build-vars.outputs.archs }}
           sign-with-temporary-key: true
-          signing-key-path: tmp-melange.key
-          keyring-append: tmp-melange.pub
-          out-dir: ./packages
-          repository-append: ./packages
-          version: ${{ steps.version.outputs.version }}
+          signing-key-path: ${{ steps.prepare-build-vars.outputs.private_key }}
+          keyring-append: ${{ steps.prepare-build-vars.outputs.public_key }}
+          out-dir: ${{ steps.prepare-build-vars.outputs.package_repository }}
+          repository-append: ${{ steps.prepare-build-vars.outputs.package_repository }}
+          version: v0.5.5
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
 
       - name: Build image with apko
         uses: chainguard-dev/actions/apko-build@v1.0.8
         with:
           config: apko.yaml
           tag: ${{ fromJSON(format('["{0}"]', steps.meta.outputs.tags))[0] }}
-          keyring-append: tmp-melange.pub
-          archs: amd64,arm64
-          repository-append: ./packages
-          sbom-path: ghcr.io/${{ github.repository }}.json
-          output: image.tar
+          archs: ${{ steps.prepare-build-vars.outputs.archs }}
+          repository-append: ${{ steps.prepare-build-vars.outputs.package_repository }}
+          keyring-append: ${{ steps.prepare-build-vars.outputs.public_key }}
+          sbom-path: ${{ steps.prepare-build-vars.outputs.sbom_path }}
+          output: ${{ steps.prepare-build-vars.outputs.image }}
 
       - name: Push image
         if: github.event_name != 'pull_request'
@@ -163,7 +176,7 @@ jobs:
           FIRST_TAG=${DOCKER_TAGS[0]}
 
           # Push the image using the first tag
-          crane push image.tar ${FIRST_TAG}
+          crane push ${IMAGE} ${FIRST_TAG}
 
           # Copy the image to all other tags
           for TAG in "${DOCKER_TAGS[@]:1}"; do
@@ -176,6 +189,8 @@ jobs:
             crane tag ${FIRST_TAG} ghcr.io/${{ github.repository }}:latest
             echo "Tagged as latest"
           fi
+        env:
+          IMAGE: ${{ steps.prepare-build-vars.outputs.image }}
 
       - name: Sign image digest with keyless signing
         if: github.event_name != 'pull_request'
@@ -244,7 +259,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: sbom
-          path: ghcr.io/${{ github.repository }}.json
+          path: ${{ steps.prepare-build-vars.outputs.sbom_path }}
 
       - name: Generate GitHub SBOM attestation
         if: github.event_name != 'pull_request'
@@ -252,7 +267,7 @@ jobs:
         with:
           subject-name: "mbta-mcp-server container image"
           subject-digest: "${{ steps.meta.outputs.digest }}"
-          sbom-path: ghcr.io/${{ github.repository }}.json
+          sbom-path: ${{ steps.prepare-build-vars.outputs.sbom_path }}
           attestation-output: sbom-attestation.json
 
       - name: Upload SBOM attestation
