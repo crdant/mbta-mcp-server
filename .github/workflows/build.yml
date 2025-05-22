@@ -135,6 +135,9 @@ jobs:
         run: |
           PACKAGE_REPOSITORY=./packages
           mkdir -p ${PACKAGE_REPOSITORY}
+          # extract the first tag for the generated tags
+          TAG=$(echo '${{ steps.meta.outputs.tags }}' | head -n 1)
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
           # Create a temporary keyring for melange
           echo "private_key=melange.key" >> $GITHUB_OUTPUT
           echo "public_key=melange.pub" >> $GITHUB_OUTPUT
@@ -165,7 +168,7 @@ jobs:
         uses: chainguard-images/actions/apko-build@v1.0.0
         with:
           config: apko.yaml
-          tag: ${{ fromJSON(format('["{0}"]', steps.meta.outputs.tags))[0] }}
+          tag: ${{ steps.prepare-build-vars.outputs.tag }}
           archs: ${{ steps.prepare-build-vars.outputs.archs }}
           repository-append: ${{ steps.prepare-build-vars.outputs.package_repository }}
           keyring-append: ${{ steps.prepare-build-vars.outputs.public_key }}
