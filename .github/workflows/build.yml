@@ -134,7 +134,7 @@ jobs:
         id: prepare-build-vars
         run: |
           PACKAGE_REPOSITORY=./packages
-          mkdir -p ${PACAKGE_REPOSITORY}
+          mkdir -p ${PACKAGE_REPOSITORY}
           # Create a temporary keyring for melange
           echo "private_key=melange.key" >> $GITHUB_OUTPUT
           echo "public_key=melange.pub" >> $GITHUB_OUTPUT
