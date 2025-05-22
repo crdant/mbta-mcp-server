@@ -167,6 +167,7 @@ jobs:
           keyring-append: ${{ steps.prepare-build-vars.outputs.public_key }}
           sbom-path: ${{ steps.prepare-build-vars.outputs.sbom_path }}
           output: ${{ steps.prepare-build-vars.outputs.image }}
+          debug: true
 
       - name: Push image
         if: github.event_name != 'pull_request'
