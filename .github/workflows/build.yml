@@ -151,11 +151,15 @@ jobs:
           sign-with-temporary-key: true
           signing-key-path: ${{ steps.prepare-build-vars.outputs.private_key }}
           keyring-append: ${{ steps.prepare-build-vars.outputs.public_key }}
-          out-dir: ${{ steps.prepare-build-vars.outputs.package_repository }}
           repository-append: ${{ steps.prepare-build-vars.outputs.package_repository }}
           version: v0.5.5
         env:
           VERSION: ${{ steps.version.outputs.version }}
+
+      - name: Show tags
+        run: |
+          echo "Tags:"
+          echo "${{ steps.meta.outputs.tags }}"
 
       - name: Build image with apko
         uses: chainguard-images/actions/apko-build@v1.0.0
