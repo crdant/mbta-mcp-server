@@ -133,10 +133,12 @@ jobs:
       - name: Prepare shared environment
         id: prepare-build-vars
         run: |
+          PACKAGE_REPOSITORY=./packages
+          mkdir -p ${PACAKGE_REPOSITORY}
           # Create a temporary keyring for melange
           echo "private_key=melange.key" >> $GITHUB_OUTPUT
           echo "public_key=melange.pub" >> $GITHUB_OUTPUT
-          echo "package_repository=./packages" >> $GITHUB_OUTPUT
+          echo "package_repository=${PACKAGE_REPOSITORY}" >> $GITHUB_OUTPUT
           echo "arch=x86_64,aarch64" >> $GITHUB_OUTPUT
           echo "sbom_path=ghcr.io/${{ github.repository }}.json" >> $GITHUB_OUTPUT
           echo "image=image.tar" >> $GITHUB_OUTPUT
