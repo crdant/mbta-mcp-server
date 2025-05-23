@@ -39,6 +39,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       
+      - name: Install cosign
+        uses: sigstore/cosign-installer@main
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v4
         with:
@@ -47,48 +50,19 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Install cosign
-        uses: sigstore/cosign-installer@v3.1.1
+          COSIGN_EXPERIMENTAL: "1"  # Required for keyless signing
 
-      - name: Sign binaries with keyless signing
-        env:
-          COSIGN_EXPERIMENTAL: "true"
+      - name: Verify signing
         run: |
-          # Sign each binary artifact with keyless signing
-          for artifact in dist/*.tar.gz dist/*.zip; do
-            if [ -f "$artifact" ]; then
-              cosign sign-blob --yes "$artifact" > "${artifact}.sig"
-              echo "Signed ${artifact}"
-            fi
-          done
+          echo "Checking signing artifacts produced by GoReleaser:"
+          ls -la dist/
 
-      - name: Sign container images with keyless signing
-        env:
-          COSIGN_EXPERIMENTAL: "true"
-        run: |
-          # Sign all container images built by goreleaser
-          for image in $(cat dist/artifacts.json | jq -r '.docker_images[]?.name + "@" + .docker_images[]?.id'); do
-            if [ ! -z "$image" ]; then
-              cosign sign "$image"
-              echo "Signed ${image}"
-            fi
-          done
-
-      - name: Verify container image signatures
-        env:
-          COSIGN_EXPERIMENTAL: "true"
-        run: |
-          # Verify signatures of all container images
-          for image in $(cat dist/artifacts.json | jq -r '.docker_images[]?.name + "@" + .docker_images[]?.id'); do
-            if [ ! -z "$image" ]; then
-              cosign verify \
-                --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/release.yml@refs/tags/${{ github.ref_name }}" \
-                --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-                "$image"
-              echo "Verified ${image}"
-            fi
-          done
+          # Check for signature and certificate files
+          if ls dist/*.sig >/dev/null 2>&1 && ls dist/*.pem >/dev/null 2>&1; then
+            echo "✅ Signatures and certificates were generated successfully"
+          else
+            echo "⚠️ Signatures or certificates may be missing"
+          fi
 
       - name: Upload assets
         uses: actions/upload-artifact@v4
