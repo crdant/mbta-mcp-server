@@ -140,7 +140,8 @@ jobs:
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
           # Create a temporary keyring for melange
           echo "private_key=melange.key" >> $GITHUB_OUTPUT
-          echo "public_key=melange.pub" >> $GITHUB_OUTPUT
+        echo "public_key=melange.key.pub" >> $GITHUB_OUTPUT:w
+
           echo "package_repository=${PACKAGE_REPOSITORY}" >> $GITHUB_OUTPUT
           echo "arch=x86_64,aarch64" >> $GITHUB_OUTPUT
           echo "sbom_path=ghcr.io/${{ github.repository }}.json" >> $GITHUB_OUTPUT
