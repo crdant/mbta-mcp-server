@@ -113,18 +113,57 @@ Further paragraphs come after blank lines.
 
 ## Pull Request Guidelines
 
-When creating pull requests, follow these guidelines:
+When creating pull requests, follow these guidelines EXACTLY with NO EXCEPTIONS:
 
 ### PR Format
 
-- Titles should be concise (40 characters or less) and use present tense with implied subject
-- Body must include two main sections:
-  - **TL;DR**: 1-2 line summary of the change
-  - **Details**: Paragraph(s) explaining intent and impact (not just listing files changed)
-- Use appropriate section headers with dashes underlining each header
-- Always use present tense with the PR as an implied subject
-- Focus on the "why" and impact of changes, not just the "what"
-- Never use phrases like "this PR" or "this change" (the PR is the implied subject)
+- Titles MUST:
+  - Use present tense with 's' suffix on the verb (e.g., "Adds", "Fixes", "Updates", "Implements")
+  - Be concise (40 characters or less)
+  - Match the verb form used in the branch name
+  - NEVER use phrases like "Add" without the 's' suffix
+  - Example: For branch `feature/crdant/adds-vehicle-tracking`, title should be "Adds vehicle tracking..."
+
+- Body MUST include EXACTLY these two main sections with precise headers:
+  - ``` 
+    TL;DR
+    -----
+    ```
+    - 1-2 line summary of the change
+    - No bullet points in this section
+
+  - ```
+    Details
+    -------
+    ```
+    - One or more paragraph(s) explaining intent and impact (not just listing files changed)
+    - Narrative format, _may_ use bullet points SPARINGLY for clarity
+
+- Writing style MUST:
+  - Use present tense with the PR as the implied subject throughout
+  - Begin sentences with verbs (e.g., "Adds support for...", "Implements new feature...")
+  - NEVER use phrases like "this PR", "this change", "this commit", etc.
+  - NEVER use past tense ("Added", "Fixed") or future tense ("Will add")
+  - NEVER use first person ("I added", "We implemented")
+  - Start the title, TL;DR, and Details sections with different verbs
+
+- Format MUST:
+  - Use markdown formatting properly
+  - Include the Claude attribution line at the end if Claude helped create the PR
+
+### PR Checklist
+
+Before submitting your PR, verify ALL of the following:
+
+1. [ ] Title follows format guidelines (present tense with 's', under 40 chars)
+2. [ ] Body includes both required sections with exact headers (`## TL;DR` and `## Details`)
+3. [ ] No instances of "this PR", "this change", or similar phrases
+4. [ ] All sentences use present tense with implied subject
+5. [ ] All tests pass (`make test`)
+6. [ ] Linting passes (`make lint`)
+7. [ ] Documentation is updated if relevant
+8. [ ] PR focuses on a single logical change
+9. [ ] Related issues are linked with "Fixes #123" or "Relates to #123"
 
 ### PR Process
 

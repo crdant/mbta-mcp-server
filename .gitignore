@@ -60,3 +60,4 @@ melange.rsa.pub
 
 # Temporary files
 result
+.aider*
