@@ -39,6 +39,7 @@ signs:
       - "--output-certificate=${certificate}"
       - "--output-signature=${signature}"
       - "${artifact}"
+      - "--yes"  # Skip the prompt in CI environment
     artifacts: checksum
     output: true
 
