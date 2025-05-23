@@ -25,7 +25,7 @@ This document tracks the progress of implementing the MBTA MCP server according 
 - [x] Create vehicle tracking capabilities
 
 ### Phase 5: Enhanced Features
-- [ ] Build trip planning functionality
+- [x] Build trip planning functionality
 - [ ] Implement service alerts and disruptions
 - [ ] Add accessibility information queries
 
@@ -107,9 +107,9 @@ This document tracks the progress of implementing the MBTA MCP server according 
 ### Phase 5: Enhanced Features
 
 #### Step 5.1: Trip Planning
-- [ ] Implement trip planning algorithm
-- [ ] Add transfer point identification
-- [ ] Create travel time estimation
+- [x] Implement trip planning algorithm
+- [x] Add transfer point identification
+- [x] Create travel time estimation
 
 #### Step 5.2: Service Alerts
 - [ ] Add service disruption detection
