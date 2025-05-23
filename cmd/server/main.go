@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -44,8 +43,8 @@ func main() {
 	mcpServer.RegisterDefaultHandlers()
 
 	// Start the server with stdio protocol
-	fmt.Println("MBTA MCP Server started successfully")
-	fmt.Println("Using stdio protocol - input and output are on stdin/stdout")
+	log.Println("MBTA MCP Server started successfully")
+	log.Println("Using stdio protocol - input and output are on stdin/stdout")
 	if err := mcpServer.Start(); err != nil {
 		log.Fatalf("Error running MCP server: %v", err)
 		os.Exit(1)
