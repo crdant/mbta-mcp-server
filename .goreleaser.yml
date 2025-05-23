@@ -28,6 +28,20 @@ archives:
 
 # Images are built with melange and apko in a separate workflow
 
+# Sign the checksum file with cosign keyless signing
+signs:
+  - cmd: cosign
+    env:
+      - COSIGN_EXPERIMENTAL=1
+    certificate: "${artifact}.pem"
+    args:
+      - sign-blob
+      - "--output-certificate=${certificate}"
+      - "--output-signature=${signature}"
+      - "${artifact}"
+    artifacts: checksum
+    output: true
+
 checksum:
   name_template: 'checksums.txt'
 
