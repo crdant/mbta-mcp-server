@@ -246,6 +246,226 @@ func StandardMockServer() (*httptest.Server, error) {
 		]
 	}`
 
+	vehiclesResponse := `{
+		"data": [
+			{
+				"id": "R-5463D359",
+				"type": "vehicle",
+				"attributes": {
+					"bearing": 45.0,
+					"carriages": [
+						{
+							"label": "1",
+							"occupancy_status": "MANY_SEATS_AVAILABLE",
+							"occupancy_percentage": 25
+						},
+						{
+							"label": "2",
+							"occupancy_status": "FEW_SEATS_AVAILABLE",
+							"occupancy_percentage": 75
+						}
+					],
+					"current_status": "IN_TRANSIT_TO",
+					"current_stop_sequence": 5,
+					"direction_id": 0,
+					"label": "1810",
+					"latitude": 42.3601,
+					"longitude": -71.0589,
+					"speed": 25.5,
+					"updated_at": "2025-05-23T14:30:00-04:00"
+				},
+				"relationships": {
+					"route": {
+						"data": {
+							"id": "Red",
+							"type": "route"
+						}
+					},
+					"stop": {
+						"data": {
+							"id": "place-dwnxg",
+							"type": "stop"
+						}
+					},
+					"trip": {
+						"data": {
+							"id": "Red-123456-20230520",
+							"type": "trip"
+						}
+					}
+				}
+			},
+			{
+				"id": "O-5463D360",
+				"type": "vehicle",
+				"attributes": {
+					"bearing": 180.0,
+					"current_status": "STOPPED_AT",
+					"current_stop_sequence": 3,
+					"direction_id": 1,
+					"label": "1720",
+					"latitude": 42.3472,
+					"longitude": -71.0745,
+					"speed": 0.0,
+					"updated_at": "2025-05-23T14:29:00-04:00"
+				},
+				"relationships": {
+					"route": {
+						"data": {
+							"id": "Orange",
+							"type": "route"
+						}
+					},
+					"stop": {
+						"data": {
+							"id": "place-north",
+							"type": "stop"
+						}
+					},
+					"trip": {
+						"data": {
+							"id": "Orange-987654-20230520",
+							"type": "trip"
+						}
+					}
+				}
+			}
+		]
+	}`
+
+	vehicleResponse := `{
+		"data": {
+			"id": "R-5463D359",
+			"type": "vehicle",
+			"attributes": {
+				"bearing": 45.0,
+				"carriages": [
+					{
+						"label": "1",
+						"occupancy_status": "MANY_SEATS_AVAILABLE",
+						"occupancy_percentage": 25
+					},
+					{
+						"label": "2",
+						"occupancy_status": "FEW_SEATS_AVAILABLE",
+						"occupancy_percentage": 75
+					}
+				],
+				"current_status": "IN_TRANSIT_TO",
+				"current_stop_sequence": 5,
+				"direction_id": 0,
+				"label": "1810",
+				"latitude": 42.3601,
+				"longitude": -71.0589,
+				"speed": 25.5,
+				"updated_at": "2025-05-23T14:30:00-04:00"
+			},
+			"relationships": {
+				"route": {
+					"data": {
+						"id": "Red",
+						"type": "route"
+					}
+				},
+				"stop": {
+					"data": {
+						"id": "place-dwnxg",
+						"type": "stop"
+					}
+				},
+				"trip": {
+					"data": {
+						"id": "Red-123456-20230520",
+						"type": "trip"
+					}
+				}
+			}
+		}
+	}`
+
+	predictionsResponse := `{
+		"data": [
+			{
+				"id": "prediction-123",
+				"type": "prediction",
+				"attributes": {
+					"arrival_time": "2025-06-01T14:30:00-04:00",
+					"departure_time": "2025-06-01T14:32:00-04:00",
+					"direction_id": 0,
+					"schedule_relationship": "SCHEDULED",
+					"status": null,
+					"stop_sequence": 5,
+					"track": "2"
+				},
+				"relationships": {
+					"route": {
+						"data": {
+							"id": "Red",
+							"type": "route"
+						}
+					},
+					"stop": {
+						"data": {
+							"id": "place-sstat",
+							"type": "stop"
+						}
+					},
+					"trip": {
+						"data": {
+							"id": "CR-Weekday-Fall-17-515",
+							"type": "trip"
+						}
+					},
+					"vehicle": {
+						"data": {
+							"id": "R-5463D359",
+							"type": "vehicle"
+						}
+					}
+				}
+			},
+			{
+				"id": "prediction-124",
+				"type": "prediction",
+				"attributes": {
+					"arrival_time": "2025-06-01T14:40:00-04:00",
+					"departure_time": "2025-06-01T14:41:00-04:00",
+					"direction_id": 0,
+					"schedule_relationship": "SCHEDULED",
+					"status": null,
+					"stop_sequence": 6,
+					"track": "1"
+				},
+				"relationships": {
+					"route": {
+						"data": {
+							"id": "Red",
+							"type": "route"
+						}
+					},
+					"stop": {
+						"data": {
+							"id": "place-dwnxg",
+							"type": "stop"
+						}
+					},
+					"trip": {
+						"data": {
+							"id": "CR-Weekday-Fall-17-515",
+							"type": "trip"
+						}
+					},
+					"vehicle": {
+						"data": {
+							"id": "R-5463D359",
+							"type": "vehicle"
+						}
+					}
+				}
+			}
+		]
+	}`
+
 	// Define response handler
 	handler := http.NewServeMux()
 
@@ -276,6 +496,42 @@ func StandardMockServer() (*httptest.Server, error) {
 		w.Header().Set("Content-Type", "application/vnd.api+json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = io.WriteString(w, schedulesResponse)
+	})
+
+	// Vehicles endpoint
+	handler.HandleFunc("/vehicles", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/vnd.api+json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = io.WriteString(w, vehiclesResponse)
+	})
+
+	// Single vehicle endpoint
+	handler.HandleFunc("/vehicles/R-5463D359", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/vnd.api+json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = io.WriteString(w, vehicleResponse)
+	})
+
+	// Predictions endpoint
+	handler.HandleFunc("/predictions", func(w http.ResponseWriter, r *http.Request) {
+		// Check for vehicle filter
+		vehicleFilter := r.URL.Query().Get("filter[vehicle]")
+
+		if vehicleFilter == "R-5463D359" {
+			w.Header().Set("Content-Type", "application/vnd.api+json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = io.WriteString(w, predictionsResponse)
+		} else if vehicleFilter == "non-existent" {
+			// Return empty predictions for non-existent vehicle
+			w.Header().Set("Content-Type", "application/vnd.api+json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = io.WriteString(w, `{"data": []}`)
+		} else {
+			// Default response for other queries
+			w.Header().Set("Content-Type", "application/vnd.api+json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = io.WriteString(w, predictionsResponse)
+		}
 	})
 
 	// Not found handler
