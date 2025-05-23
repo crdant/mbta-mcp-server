@@ -30,7 +30,7 @@ func TestGetTrips(t *testing.T) {
 		// Return a mock response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{
+		_, err := w.Write([]byte(`{
 			"data": [
 				{
 					"id": "trip1",
@@ -54,6 +54,9 @@ func TestGetTrips(t *testing.T) {
 				}
 			]
 		}`))
+		if err != nil {
+			t.Fatalf("Failed to write response: %v", err)
+		}
 	})
 
 	// Start mock server
@@ -118,7 +121,7 @@ func TestGetTrip(t *testing.T) {
 		// Return a mock response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{
+		_, err := w.Write([]byte(`{
 			"data": {
 				"id": "trip1",
 				"type": "trip",
@@ -140,6 +143,9 @@ func TestGetTrip(t *testing.T) {
 				}
 			}
 		}`))
+		if err != nil {
+			t.Fatalf("Failed to write response: %v", err)
+		}
 	})
 
 	// Start mock server
@@ -201,7 +207,7 @@ func TestGetTripsByRoute(t *testing.T) {
 		// Return a mock response
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{
+		_, err := w.Write([]byte(`{
 			"data": [
 				{
 					"id": "trip1",
@@ -245,6 +251,9 @@ func TestGetTripsByRoute(t *testing.T) {
 				}
 			]
 		}`))
+		if err != nil {
+			t.Fatalf("Failed to write response: %v", err)
+		}
 	})
 
 	// Start mock server

@@ -1,12 +1,10 @@
 package server
 
 import (
-	"context"
 	"encoding/json"
 	"testing"
 	"time"
 
-	"github.com/crdant/mbta-mcp-server/internal/config"
 	"github.com/crdant/mbta-mcp-server/pkg/mbta/models"
 	"github.com/mark3labs/mcp-go/mcp"
 )
@@ -355,34 +353,3 @@ func TestPluralize(t *testing.T) {
 	}
 }
 
-// Mock for testing planTripHandler
-func mockPlanTripHandler(t *testing.T) {
-	// This would be a more complex test requiring mocks for the client
-	// For brevity, we're not implementing the full functionality here
-	cfg := &config.Config{}
-	server, _ := New(cfg)
-	
-	// Test with valid parameters
-	validRequest := mcp.CallToolRequest{
-		Params: struct {
-			Name      string         `json:"name"`
-			Arguments map[string]any `json:"arguments,omitempty"`
-			Meta      *struct {
-				ProgressToken mcp.ProgressToken `json:"progressToken,omitempty"`
-			} `json:"_meta,omitempty"`
-		}{
-			Name: "plan_trip",
-			Arguments: map[string]any{
-				"origin_stop_id":      "place-harvard",
-				"destination_stop_id": "place-porter",
-			},
-		},
-	}
-	
-	// This is just a basic structure test - in a real implementation,
-	// we would use mocks to avoid actual API calls
-	_, err := server.planTripHandler(context.Background(), validRequest)
-	if err != nil {
-		t.Logf("Got expected error in test environment: %v", err)
-	}
-}
