@@ -168,7 +168,7 @@ func TestGetRoutesHandler(t *testing.T) {
 
 	t.Run("Get routes returns data as JSON content", func(t *testing.T) {
 		// Create a mocked implementation of getRoutesHandler that returns proper JSON
-		// This tests that the handler will eventually be implemented to return 
+		// This tests that the handler will eventually be implemented to return
 		// structured data, not just text
 		handler := func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 			routes, err := mbtaClient.GetRoutes(ctx)

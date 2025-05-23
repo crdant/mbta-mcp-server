@@ -334,7 +334,7 @@ func (s *Server) getSchedulesHandler(ctx context.Context, request mcp.CallToolRe
 
 	// Build query parameters
 	params := make(map[string]string)
-	
+
 	if hasRouteID {
 		routeIDStr, ok := routeID.(string)
 		if !ok {
@@ -342,7 +342,7 @@ func (s *Server) getSchedulesHandler(ctx context.Context, request mcp.CallToolRe
 		}
 		params["filter[route]"] = routeIDStr
 	}
-	
+
 	if hasStopID {
 		stopIDStr, ok := stopID.(string)
 		if !ok {
@@ -350,7 +350,7 @@ func (s *Server) getSchedulesHandler(ctx context.Context, request mcp.CallToolRe
 		}
 		params["filter[stop]"] = stopIDStr
 	}
-	
+
 	if hasDirectionID {
 		directionIDStr, ok := directionID.(string)
 		if !ok {
@@ -374,15 +374,15 @@ func formatRouteResponse(routes []*models.Route) (*mcp.CallToolResult, error) {
 	routesData := make([]map[string]interface{}, 0, len(routes))
 	for _, route := range routes {
 		routeMap := map[string]interface{}{
-			"id":                   route.ID,
-			"name":                 route.Attributes.LongName,
-			"short_name":           route.Attributes.ShortName,
-			"type":                 route.Attributes.Type,
-			"type_description":     route.GetTypeDescription(),
-			"description":          route.Attributes.Description,
-			"color":                route.Attributes.Color,
-			"text_color":           route.Attributes.TextColor,
-			"directions":           route.Attributes.DirectionNames,
+			"id":                     route.ID,
+			"name":                   route.Attributes.LongName,
+			"short_name":             route.Attributes.ShortName,
+			"type":                   route.Attributes.Type,
+			"type_description":       route.GetTypeDescription(),
+			"description":            route.Attributes.Description,
+			"color":                  route.Attributes.Color,
+			"text_color":             route.Attributes.TextColor,
+			"directions":             route.Attributes.DirectionNames,
 			"direction_destinations": route.Attributes.DirectionDestinations,
 		}
 		routesData = append(routesData, routeMap)
@@ -461,16 +461,16 @@ func formatScheduleResponse(schedules []models.Schedule, included []models.Inclu
 		departureTime, _ := schedule.FormattedDepartureTime("3:04 PM")
 
 		scheduleMap := map[string]interface{}{
-			"id":              schedule.ID,
-			"arrival_time":    schedule.Attributes.ArrivalTime,
-			"departure_time":  schedule.Attributes.DepartureTime,
-			"formatted_arrival":    arrivalTime,
-			"formatted_departure":  departureTime,
-			"stop_sequence":   schedule.Attributes.StopSequence,
-			"stop_headsign":   schedule.Attributes.StopHeadsign,
-			"pickup_available": schedule.IsPickupAvailable(),
-			"dropoff_available": schedule.IsDropOffAvailable(),
-			"is_timepoint":    schedule.IsTimepoint(),
+			"id":                  schedule.ID,
+			"arrival_time":        schedule.Attributes.ArrivalTime,
+			"departure_time":      schedule.Attributes.DepartureTime,
+			"formatted_arrival":   arrivalTime,
+			"formatted_departure": departureTime,
+			"stop_sequence":       schedule.Attributes.StopSequence,
+			"stop_headsign":       schedule.Attributes.StopHeadsign,
+			"pickup_available":    schedule.IsPickupAvailable(),
+			"dropoff_available":   schedule.IsDropOffAvailable(),
+			"is_timepoint":        schedule.IsTimepoint(),
 		}
 
 		// Extract relationship IDs
