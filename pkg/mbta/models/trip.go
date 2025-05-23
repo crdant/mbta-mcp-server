@@ -42,20 +42,20 @@ type TripPlan struct {
 
 // TripLeg represents a single leg of a trip plan
 type TripLeg struct {
-	Origin         *Stop         `json:"origin"`
-	Destination    *Stop         `json:"destination"`
-	RouteID        string        `json:"route_id"`
-	RouteName      string        `json:"route_name"`
-	TripID         string        `json:"trip_id"`
-	DepartureTime  time.Time     `json:"departure_time"`
-	ArrivalTime    time.Time     `json:"arrival_time"`
-	Duration       time.Duration `json:"duration"`
-	Distance       float64       `json:"distance"`
-	Headsign       string        `json:"headsign"`
-	DirectionID    int           `json:"direction_id"`
-	Stops          []Stop        `json:"intermediate_stops,omitempty"`
-	IsAccessible   bool          `json:"is_accessible"`
-	Instructions   string        `json:"instructions"`
+	Origin         *Stop           `json:"origin"`
+	Destination    *Stop           `json:"destination"`
+	RouteID        string          `json:"route_id"`
+	RouteName      string          `json:"route_name"`
+	TripID         string          `json:"trip_id"`
+	DepartureTime  time.Time       `json:"departure_time"`
+	ArrivalTime    time.Time       `json:"arrival_time"`
+	Duration       time.Duration   `json:"duration"`
+	Distance       float64         `json:"distance"`
+	Headsign       string          `json:"headsign"`
+	DirectionID    int             `json:"direction_id"`
+	Stops          []Stop          `json:"intermediate_stops,omitempty"`
+	IsAccessible   bool            `json:"is_accessible"`
+	Instructions   string          `json:"instructions"`
 	PredictedTimes *PredictedTimes `json:"predicted_times,omitempty"`
 }
 

@@ -13,7 +13,7 @@ func TestFormatTripPlanResponse(t *testing.T) {
 	// Create a sample trip plan
 	now := time.Now()
 	later := now.Add(30 * time.Minute)
-	
+
 	origin := &models.Stop{
 		ID: "place-harvard",
 		Attributes: models.StopAttributes{
@@ -23,7 +23,7 @@ func TestFormatTripPlanResponse(t *testing.T) {
 			Longitude:    -71.1190,
 		},
 	}
-	
+
 	destination := &models.Stop{
 		ID: "place-porter",
 		Attributes: models.StopAttributes{
@@ -33,7 +33,7 @@ func TestFormatTripPlanResponse(t *testing.T) {
 			Longitude:    -71.1191,
 		},
 	}
-	
+
 	tripPlan := &models.TripPlan{
 		Origin:        origin,
 		Destination:   destination,
@@ -71,7 +71,7 @@ func TestFormatTripPlanResponse(t *testing.T) {
 	if response == nil {
 		t.Fatal("Expected non-nil response")
 	}
-	
+
 	if response.IsError {
 		t.Errorf("Response indicates an error: %v", response)
 	}
@@ -142,10 +142,10 @@ func TestFormatTransferPointsResponse(t *testing.T) {
 			Stop: &models.Stop{
 				ID: "place-dwnxg",
 				Attributes: models.StopAttributes{
-					Name:         "Downtown Crossing",
-					Municipality: "Boston",
-					Latitude:     42.3554,
-					Longitude:    -71.0603,
+					Name:               "Downtown Crossing",
+					Municipality:       "Boston",
+					Latitude:           42.3554,
+					Longitude:          -71.0603,
 					WheelchairBoarding: models.WheelchairBoardingAccessible,
 				},
 			},
@@ -166,7 +166,7 @@ func TestFormatTransferPointsResponse(t *testing.T) {
 	if response == nil {
 		t.Fatal("Expected non-nil response")
 	}
-	
+
 	if response.IsError {
 		t.Errorf("Response indicates an error: %v", response)
 	}
@@ -227,7 +227,7 @@ func TestFormatTravelTimeResponse(t *testing.T) {
 			LocationType: models.LocationTypeStation,
 		},
 	}
-	
+
 	destination := &models.Stop{
 		ID: "place-sstat",
 		Attributes: models.StopAttributes{
@@ -240,10 +240,10 @@ func TestFormatTravelTimeResponse(t *testing.T) {
 	}
 
 	// Format the travel time
-	distance := 2.1    // kilometers
+	distance := 2.1     // kilometers
 	timeMinutes := 15.0 // minutes
 	source := "Based on recent schedules"
-	
+
 	response, err := formatTravelTimeResponse(origin, destination, distance, timeMinutes, source)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
@@ -253,7 +253,7 @@ func TestFormatTravelTimeResponse(t *testing.T) {
 	if response == nil {
 		t.Fatal("Expected non-nil response")
 	}
-	
+
 	if response.IsError {
 		t.Errorf("Response indicates an error: %v", response)
 	}
@@ -352,4 +352,3 @@ func TestPluralize(t *testing.T) {
 		}
 	}
 }
-

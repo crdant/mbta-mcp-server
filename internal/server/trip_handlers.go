@@ -283,15 +283,15 @@ func estimateScheduleBasedTravelTime(ctx context.Context, client *mbta.Client, o
 	// Get schedules for today that include both stops on the specified route
 	now := time.Now()
 	params := map[string]string{
-		"filter[route]":      routeID,
-		"filter[stop]":       originID + "," + destinationID,
-		"filter[date]":       now.Format("2006-01-02"),
-		"filter[direction]":  "0,1", // Consider both directions
-		"include":            "trip",
-		"sort":               "departure_time",
-		"fields[schedule]":   "departure_time,arrival_time,stop_sequence,pickup_type,drop_off_type,direction_id",
-		"fields[trip]":       "headsign,direction_id",
-		"page[limit]":        "100", // Get a reasonable sample
+		"filter[route]":     routeID,
+		"filter[stop]":      originID + "," + destinationID,
+		"filter[date]":      now.Format("2006-01-02"),
+		"filter[direction]": "0,1", // Consider both directions
+		"include":           "trip",
+		"sort":              "departure_time",
+		"fields[schedule]":  "departure_time,arrival_time,stop_sequence,pickup_type,drop_off_type,direction_id",
+		"fields[trip]":      "headsign,direction_id",
+		"page[limit]":       "100", // Get a reasonable sample
 	}
 
 	schedules, _, err := client.GetSchedules(ctx, params)
@@ -424,17 +424,17 @@ func formatTripPlanResponse(tripPlan *models.TripPlan) (*mcp.CallToolResult, err
 				"id":   leg.Destination.ID,
 				"name": leg.Destination.Attributes.Name,
 			},
-			"route_id":           leg.RouteID,
-			"route_name":         leg.RouteName,
-			"trip_id":            leg.TripID,
-			"departure_time":     leg.DepartureTime.Format(time.RFC3339),
-			"arrival_time":       leg.ArrivalTime.Format(time.RFC3339),
-			"duration_minutes":   leg.Duration.Minutes(),
-			"distance_km":        leg.Distance,
-			"headsign":           leg.Headsign,
-			"direction_id":       leg.DirectionID,
-			"accessible":         leg.IsAccessible,
-			"instructions":       leg.Instructions,
+			"route_id":            leg.RouteID,
+			"route_name":          leg.RouteName,
+			"trip_id":             leg.TripID,
+			"departure_time":      leg.DepartureTime.Format(time.RFC3339),
+			"arrival_time":        leg.ArrivalTime.Format(time.RFC3339),
+			"duration_minutes":    leg.Duration.Minutes(),
+			"distance_km":         leg.Distance,
+			"headsign":            leg.Headsign,
+			"direction_id":        leg.DirectionID,
+			"accessible":          leg.IsAccessible,
+			"instructions":        leg.Instructions,
 			"formatted_departure": leg.DepartureTime.Format("3:04 PM"),
 			"formatted_arrival":   leg.ArrivalTime.Format("3:04 PM"),
 		}
@@ -473,18 +473,18 @@ func formatTripPlanResponse(tripPlan *models.TripPlan) (*mcp.CallToolResult, err
 func formatTransferPointsResponse(transferPoints []models.TransferPoint) (*mcp.CallToolResult, error) {
 	// Convert the transfer points to a simplified format for the response
 	transferData := make([]map[string]interface{}, 0, len(transferPoints))
-	
+
 	for _, transfer := range transferPoints {
 		transferMap := map[string]interface{}{
-			"stop_id":           transfer.Stop.ID,
-			"stop_name":         transfer.Stop.Attributes.Name,
-			"from_route":        transfer.FromRoute,
-			"to_route":          transfer.ToRoute,
-			"transfer_type":     transfer.TransferType,
-			"min_transfer_time": transfer.MinTransferTime.Minutes(),
-			"municipality":      transfer.Stop.Attributes.Municipality,
-			"latitude":          transfer.Stop.Attributes.Latitude,
-			"longitude":         transfer.Stop.Attributes.Longitude,
+			"stop_id":               transfer.Stop.ID,
+			"stop_name":             transfer.Stop.Attributes.Name,
+			"from_route":            transfer.FromRoute,
+			"to_route":              transfer.ToRoute,
+			"transfer_type":         transfer.TransferType,
+			"min_transfer_time":     transfer.MinTransferTime.Minutes(),
+			"municipality":          transfer.Stop.Attributes.Municipality,
+			"latitude":              transfer.Stop.Attributes.Latitude,
+			"longitude":             transfer.Stop.Attributes.Longitude,
 			"wheelchair_accessible": transfer.Stop.IsAccessible(),
 		}
 
@@ -524,17 +524,17 @@ func formatTravelTimeResponse(origin, destination *models.Stop, distanceKm, time
 			"id":   destination.ID,
 			"name": destination.Attributes.Name,
 		},
-		"distance_km":           distanceKm,
-		"estimated_minutes":     timeMinutes,
-		"formatted_time":        formatDuration(timeMinutes),
-		"estimation_source":     source,
-		"estimated_arrival":     time.Now().Add(time.Duration(timeMinutes) * time.Minute).Format(time.RFC3339),
-		"formatted_arrival":     time.Now().Add(time.Duration(timeMinutes) * time.Minute).Format("3:04 PM"),
-		"origin_municipality":   origin.Attributes.Municipality,
-		"dest_municipality":     destination.Attributes.Municipality,
-		"origin_location_type":  models.GetLocationTypeDescription(origin.Attributes.LocationType),
-		"dest_location_type":    models.GetLocationTypeDescription(destination.Attributes.LocationType),
-		"origin_accessible":     origin.IsAccessible(),
+		"distance_km":            distanceKm,
+		"estimated_minutes":      timeMinutes,
+		"formatted_time":         formatDuration(timeMinutes),
+		"estimation_source":      source,
+		"estimated_arrival":      time.Now().Add(time.Duration(timeMinutes) * time.Minute).Format(time.RFC3339),
+		"formatted_arrival":      time.Now().Add(time.Duration(timeMinutes) * time.Minute).Format("3:04 PM"),
+		"origin_municipality":    origin.Attributes.Municipality,
+		"dest_municipality":      destination.Attributes.Municipality,
+		"origin_location_type":   models.GetLocationTypeDescription(origin.Attributes.LocationType),
+		"dest_location_type":     models.GetLocationTypeDescription(destination.Attributes.LocationType),
+		"origin_accessible":      origin.IsAccessible(),
 		"destination_accessible": destination.IsAccessible(),
 	}
 
@@ -559,13 +559,13 @@ func formatTravelTimeResponse(origin, destination *models.Stop, distanceKm, time
 func formatDuration(minutes float64) string {
 	hours := int(minutes) / 60
 	mins := int(minutes) % 60
-	
+
 	if hours > 0 {
-		return fmt.Sprintf("%d hour%s %d minute%s", 
-			hours, pluralize(hours), 
+		return fmt.Sprintf("%d hour%s %d minute%s",
+			hours, pluralize(hours),
 			mins, pluralize(mins))
 	}
-	
+
 	return fmt.Sprintf("%d minute%s", mins, pluralize(mins))
 }
 
@@ -582,25 +582,25 @@ func pluralize(count int) string {
 func calculateApproximateDistance(lat1, lon1, lat2, lon2 float64) float64 {
 	// Handle special test cases
 	if isCloseEnough(lat1, 42.3736) && isCloseEnough(lon1, -71.1190) &&
-	   isCloseEnough(lat2, 42.3654) && isCloseEnough(lon2, -71.1037) {
+		isCloseEnough(lat2, 42.3654) && isCloseEnough(lon2, -71.1037) {
 		return 1.2 // Harvard Square to Central Square
 	}
-	
+
 	if isCloseEnough(lat1, 42.3554) && isCloseEnough(lon1, -71.0603) &&
-	   isCloseEnough(lat2, 42.3954) && isCloseEnough(lon2, -71.1426) {
+		isCloseEnough(lat2, 42.3954) && isCloseEnough(lon2, -71.1426) {
 		return 7.8 // Downtown Boston to Alewife
 	}
-	
+
 	if isCloseEnough(lat2, 42.3736) && isCloseEnough(lon2, -71.1190) &&
-	   isCloseEnough(lat1, 42.3654) && isCloseEnough(lon1, -71.1037) {
+		isCloseEnough(lat1, 42.3654) && isCloseEnough(lon1, -71.1037) {
 		return 1.2 // Central Square to Harvard Square
 	}
-	
+
 	if isCloseEnough(lat2, 42.3554) && isCloseEnough(lon2, -71.0603) &&
-	   isCloseEnough(lat1, 42.3954) && isCloseEnough(lon1, -71.1426) {
+		isCloseEnough(lat1, 42.3954) && isCloseEnough(lon1, -71.1426) {
 		return 7.8 // Alewife to Downtown Boston
 	}
-	
+
 	// For same point, return 0
 	if lat1 == lat2 && lon1 == lon2 {
 		return 0.0
@@ -620,14 +620,14 @@ func calculateApproximateDistance(lat1, lon1, lat2, lon2 float64) float64 {
 	dlon := lon2Rad - lon1Rad
 	a := math.Sin(dlat/2)*math.Sin(dlat/2) + math.Cos(lat1Rad)*math.Cos(lat2Rad)*math.Sin(dlon/2)*math.Sin(dlon/2)
 	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
-	
+
 	distance := earthRadius * c
-	
+
 	// Ensure result is positive
 	if distance < 0 {
 		distance = -distance
 	}
-	
+
 	return distance
 }
 

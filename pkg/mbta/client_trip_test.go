@@ -17,7 +17,7 @@ func TestGetTrips(t *testing.T) {
 		if r.Method != http.MethodGet {
 			t.Errorf("Expected method GET, got %s", r.Method)
 		}
-		
+
 		if r.URL.Path != "/trips" {
 			t.Errorf("Expected path /trips, got %s", r.URL.Path)
 		}
@@ -113,7 +113,7 @@ func TestGetTrip(t *testing.T) {
 		if r.Method != http.MethodGet {
 			t.Errorf("Expected method GET, got %s", r.Method)
 		}
-		
+
 		if r.URL.Path != "/trips/trip1" {
 			t.Errorf("Expected path /trips/trip1, got %s", r.URL.Path)
 		}
@@ -194,7 +194,7 @@ func TestGetTripsByRoute(t *testing.T) {
 		if r.Method != http.MethodGet {
 			t.Errorf("Expected method GET, got %s", r.Method)
 		}
-		
+
 		if r.URL.Path != "/trips" {
 			t.Errorf("Expected path /trips, got %s", r.URL.Path)
 		}
@@ -337,19 +337,19 @@ func TestFindCommonRoutes(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			result := findCommonRoutes(test.routesA, test.routesB)
-			
+
 			// Check length
 			if len(result) != len(test.expected) {
 				t.Errorf("Expected %d common routes, got %d", len(test.expected), len(result))
 				return
 			}
-			
+
 			// Create map for easier comparison
 			expectedMap := make(map[string]bool)
 			for _, route := range test.expected {
 				expectedMap[route] = true
 			}
-			
+
 			// Verify each result is in expected
 			for _, route := range result {
 				if !expectedMap[route] {
@@ -402,19 +402,19 @@ func TestFindCommonStops(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			result := findCommonStops(test.stopsA, test.stopsB)
-			
+
 			// Check length
 			if len(result) != len(test.expected) {
 				t.Errorf("Expected %d common stops, got %d", len(test.expected), len(result))
 				return
 			}
-			
+
 			// Create map for easier comparison
 			expectedMap := make(map[string]bool)
 			for _, stop := range test.expected {
 				expectedMap[stop] = true
 			}
-			
+
 			// Verify each result is in expected
 			for _, stop := range result {
 				if !expectedMap[stop] {
@@ -467,12 +467,12 @@ func TestCalculateApproximateDistance(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			distance := calculateApproximateDistance(test.lat1, test.lon1, test.lat2, test.lon2)
-			
+
 			diff := distance - test.expected
 			if diff < 0 {
 				diff = -diff
 			}
-			
+
 			if diff > test.delta {
 				t.Errorf("Expected distance around %f km, got %f km (diff: %f)", test.expected, distance, diff)
 			}

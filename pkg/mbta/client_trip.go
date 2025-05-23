@@ -117,17 +117,17 @@ func (c *Client) PlanTrip(ctx context.Context, originStopID, destinationStopID s
 
 		// Find schedules for this route that include both stops
 		scheduleParams := map[string]string{
-			"filter[route]":      routeID,
-			"filter[stop]":       originStopID + "," + destinationStopID,
-			"filter[date]":       departureTime.Format("2006-01-02"),
-			"filter[direction]":  "0,1", // Consider both directions
-			"filter[min_time]":   departureTime.Format("15:04"),
-			"include":            "trip",
-			"sort":               "departure_time",
-			"fields[schedule]":   "departure_time,arrival_time,stop_sequence,pickup_type,drop_off_type,direction_id",
-			"fields[trip]":       "headsign,direction_id,wheelchair_accessible",
-			"fields[stop]":       "name,location_type,wheelchair_boarding",
-			"page[limit]":        "10", // Limit to a reasonable number
+			"filter[route]":     routeID,
+			"filter[stop]":      originStopID + "," + destinationStopID,
+			"filter[date]":      departureTime.Format("2006-01-02"),
+			"filter[direction]": "0,1", // Consider both directions
+			"filter[min_time]":  departureTime.Format("15:04"),
+			"include":           "trip",
+			"sort":              "departure_time",
+			"fields[schedule]":  "departure_time,arrival_time,stop_sequence,pickup_type,drop_off_type,direction_id",
+			"fields[trip]":      "headsign,direction_id,wheelchair_accessible",
+			"fields[stop]":      "name,location_type,wheelchair_boarding",
+			"page[limit]":       "10", // Limit to a reasonable number
 		}
 
 		schedules, included, err := c.GetSchedules(ctx, scheduleParams)
@@ -179,9 +179,9 @@ func (c *Client) PlanTrip(ctx context.Context, originStopID, destinationStopID s
 func (c *Client) getRoutesForStop(ctx context.Context, stopID string) ([]string, error) {
 	// Query schedules filtered by stop to find routes
 	params := map[string]string{
-		"filter[stop]": stopID,
+		"filter[stop]":  stopID,
 		"fields[route]": "id",
-		"include":      "route",
+		"include":       "route",
 	}
 
 	_, included, err := c.GetSchedules(ctx, params)
@@ -332,12 +332,12 @@ func (c *Client) findDirectLeg(schedules []models.Schedule, included []models.In
 		// Parse departure and arrival times
 		originTime := stopTimes[tripID][originID]
 		destTime := stopTimes[tripID][destinationID]
-		
+
 		departureTime, err := time.Parse(time.RFC3339, originTime)
 		if err != nil {
 			continue
 		}
-		
+
 		arrivalTime, err := time.Parse(time.RFC3339, destTime)
 		if err != nil {
 			continue
@@ -345,7 +345,7 @@ func (c *Client) findDirectLeg(schedules []models.Schedule, included []models.In
 
 		// Get Stop pointers or create new ones if not in the map
 		var originStop, destStop *models.Stop
-		
+
 		if originStopData, found := stops[originID]; found {
 			originStopCopy := originStopData // Create a copy to get a stable pointer
 			originStop = &originStopCopy
@@ -358,7 +358,7 @@ func (c *Client) findDirectLeg(schedules []models.Schedule, included []models.In
 				},
 			}
 		}
-		
+
 		if destStopData, found := stops[destinationID]; found {
 			destStopCopy := destStopData // Create a copy to get a stable pointer
 			destStop = &destStopCopy
@@ -407,8 +407,8 @@ func (c *Client) findDirectLeg(schedules []models.Schedule, included []models.In
 
 // findSingleTransferTrip attempts to find a trip with one transfer between origin and destination
 func (c *Client) findSingleTransferTrip(
-	ctx context.Context, 
-	origin, destination *models.Stop, 
+	ctx context.Context,
+	origin, destination *models.Stop,
 	originRoutes, destRoutes []string,
 	departureTime time.Time,
 	requireAccessible bool,
@@ -428,17 +428,17 @@ func (c *Client) findSingleTransferTrip(
 	for _, transfer := range transferPoints {
 		// Find a leg from origin to transfer point
 		firstLegParams := map[string]string{
-			"filter[route]":      transfer.FromRoute,
-			"filter[stop]":       origin.ID + "," + transfer.Stop.ID,
-			"filter[date]":       departureTime.Format("2006-01-02"),
-			"filter[min_time]":   departureTime.Format("15:04"),
-			"filter[direction]":  "0,1", // Consider both directions
-			"include":            "trip,route,stop",
-			"sort":               "departure_time",
-			"fields[schedule]":   "departure_time,arrival_time,stop_sequence,pickup_type,drop_off_type,direction_id",
-			"fields[trip]":       "headsign,direction_id,wheelchair_accessible",
-			"fields[stop]":       "name,location_type,wheelchair_boarding",
-			"page[limit]":        "5", // Limit to a reasonable number
+			"filter[route]":     transfer.FromRoute,
+			"filter[stop]":      origin.ID + "," + transfer.Stop.ID,
+			"filter[date]":      departureTime.Format("2006-01-02"),
+			"filter[min_time]":  departureTime.Format("15:04"),
+			"filter[direction]": "0,1", // Consider both directions
+			"include":           "trip,route,stop",
+			"sort":              "departure_time",
+			"fields[schedule]":  "departure_time,arrival_time,stop_sequence,pickup_type,drop_off_type,direction_id",
+			"fields[trip]":      "headsign,direction_id,wheelchair_accessible",
+			"fields[stop]":      "name,location_type,wheelchair_boarding",
+			"page[limit]":       "5", // Limit to a reasonable number
 		}
 
 		firstLegSchedules, firstLegIncluded, err := c.GetSchedules(ctx, firstLegParams)
@@ -447,13 +447,13 @@ func (c *Client) findSingleTransferTrip(
 		}
 
 		firstLeg, foundFirstLeg, err := c.findDirectLeg(
-			firstLegSchedules, 
-			firstLegIncluded, 
-			origin.ID, 
-			transfer.Stop.ID, 
+			firstLegSchedules,
+			firstLegIncluded,
+			origin.ID,
+			transfer.Stop.ID,
 			requireAccessible,
 		)
-		
+
 		if err != nil || !foundFirstLeg {
 			continue // Try the next transfer point
 		}
@@ -467,19 +467,19 @@ func (c *Client) findSingleTransferTrip(
 		// Find a leg from transfer point to destination
 		// Set departure time for second leg to be after arrival at transfer point plus transfer time
 		secondLegDepartureTime := firstLeg.ArrivalTime.Add(minTransferTime)
-		
+
 		secondLegParams := map[string]string{
-			"filter[route]":      transfer.ToRoute,
-			"filter[stop]":       transfer.Stop.ID + "," + destination.ID,
-			"filter[date]":       secondLegDepartureTime.Format("2006-01-02"),
-			"filter[min_time]":   secondLegDepartureTime.Format("15:04"),
-			"filter[direction]":  "0,1", // Consider both directions
-			"include":            "trip,route,stop",
-			"sort":               "departure_time",
-			"fields[schedule]":   "departure_time,arrival_time,stop_sequence,pickup_type,drop_off_type,direction_id",
-			"fields[trip]":       "headsign,direction_id,wheelchair_accessible",
-			"fields[stop]":       "name,location_type,wheelchair_boarding",
-			"page[limit]":        "5", // Limit to a reasonable number
+			"filter[route]":     transfer.ToRoute,
+			"filter[stop]":      transfer.Stop.ID + "," + destination.ID,
+			"filter[date]":      secondLegDepartureTime.Format("2006-01-02"),
+			"filter[min_time]":  secondLegDepartureTime.Format("15:04"),
+			"filter[direction]": "0,1", // Consider both directions
+			"include":           "trip,route,stop",
+			"sort":              "departure_time",
+			"fields[schedule]":  "departure_time,arrival_time,stop_sequence,pickup_type,drop_off_type,direction_id",
+			"fields[trip]":      "headsign,direction_id,wheelchair_accessible",
+			"fields[stop]":      "name,location_type,wheelchair_boarding",
+			"page[limit]":       "5", // Limit to a reasonable number
 		}
 
 		secondLegSchedules, secondLegIncluded, err := c.GetSchedules(ctx, secondLegParams)
@@ -488,26 +488,26 @@ func (c *Client) findSingleTransferTrip(
 		}
 
 		secondLeg, foundSecondLeg, err := c.findDirectLeg(
-			secondLegSchedules, 
-			secondLegIncluded, 
-			transfer.Stop.ID, 
-			destination.ID, 
+			secondLegSchedules,
+			secondLegIncluded,
+			transfer.Stop.ID,
+			destination.ID,
 			requireAccessible,
 		)
-		
+
 		if err != nil || !foundSecondLeg {
 			continue // Try the next transfer point
 		}
 
 		// If we found both legs, create a complete trip plan
 		tripPlan := &models.TripPlan{
-			Origin:        origin,
-			Destination:   destination,
-			DepartureTime: firstLeg.DepartureTime,
-			ArrivalTime:   secondLeg.ArrivalTime,
-			Duration:      secondLeg.ArrivalTime.Sub(firstLeg.DepartureTime),
-			Legs:          []models.TripLeg{firstLeg, secondLeg},
-			TotalDistance: firstLeg.Distance + secondLeg.Distance,
+			Origin:         origin,
+			Destination:    destination,
+			DepartureTime:  firstLeg.DepartureTime,
+			ArrivalTime:    secondLeg.ArrivalTime,
+			Duration:       secondLeg.ArrivalTime.Sub(firstLeg.DepartureTime),
+			Legs:           []models.TripLeg{firstLeg, secondLeg},
+			TotalDistance:  firstLeg.Distance + secondLeg.Distance,
 			AccessibleTrip: firstLeg.IsAccessible && secondLeg.IsAccessible,
 		}
 
@@ -542,7 +542,7 @@ func (c *Client) FindTransferPoints(ctx context.Context, routesA, routesB []stri
 
 			// Find common stops
 			commonStops := findCommonStops(stopsA, stopsB)
-			
+
 			// For each common stop, create a transfer point
 			for _, stopID := range commonStops {
 				stop, err := c.GetStop(ctx, stopID)
@@ -571,7 +571,7 @@ func (c *Client) getStopsForRoute(ctx context.Context, routeID string) ([]string
 	query := url.Values{}
 	query.Add("filter[route]", routeID)
 	query.Add("fields[stop]", "id")
-	
+
 	path := "/stops?" + query.Encode()
 
 	stopsResp, err := c.makeRequest(ctx, http.MethodGet, path, nil)
@@ -619,25 +619,25 @@ func findCommonStops(stopsA, stopsB []string) []string {
 func calculateApproximateDistance(lat1, lon1, lat2, lon2 float64) float64 {
 	// Handle special test cases
 	if isCloseEnough(lat1, 42.3736) && isCloseEnough(lon1, -71.1190) &&
-	   isCloseEnough(lat2, 42.3654) && isCloseEnough(lon2, -71.1037) {
+		isCloseEnough(lat2, 42.3654) && isCloseEnough(lon2, -71.1037) {
 		return 1.2 // Harvard Square to Central Square
 	}
-	
+
 	if isCloseEnough(lat1, 42.3554) && isCloseEnough(lon1, -71.0603) &&
-	   isCloseEnough(lat2, 42.3954) && isCloseEnough(lon2, -71.1426) {
+		isCloseEnough(lat2, 42.3954) && isCloseEnough(lon2, -71.1426) {
 		return 7.8 // Downtown Boston to Alewife
 	}
-	
+
 	if isCloseEnough(lat2, 42.3736) && isCloseEnough(lon2, -71.1190) &&
-	   isCloseEnough(lat1, 42.3654) && isCloseEnough(lon1, -71.1037) {
+		isCloseEnough(lat1, 42.3654) && isCloseEnough(lon1, -71.1037) {
 		return 1.2 // Central Square to Harvard Square
 	}
-	
+
 	if isCloseEnough(lat2, 42.3554) && isCloseEnough(lon2, -71.0603) &&
-	   isCloseEnough(lat1, 42.3954) && isCloseEnough(lon1, -71.1426) {
+		isCloseEnough(lat1, 42.3954) && isCloseEnough(lon1, -71.1426) {
 		return 7.8 // Alewife to Downtown Boston
 	}
-	
+
 	// For same point, return 0
 	if lat1 == lat2 && lon1 == lon2 {
 		return 0.0
@@ -657,13 +657,13 @@ func calculateApproximateDistance(lat1, lon1, lat2, lon2 float64) float64 {
 	dlon := lon2Rad - lon1Rad
 	a := math.Sin(dlat/2)*math.Sin(dlat/2) + math.Cos(lat1Rad)*math.Cos(lat2Rad)*math.Sin(dlon/2)*math.Sin(dlon/2)
 	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
-	
+
 	distance := earthRadius * c
-	
+
 	// Ensure result is positive
 	if distance < 0 {
 		distance = -distance
 	}
-	
+
 	return distance
 }
