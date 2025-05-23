@@ -39,6 +39,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       
+      - name: Install cosign
+        uses: sigstore/cosign-installer@main
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v4
         with:
@@ -48,9 +51,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COSIGN_EXPERIMENTAL: "1"  # Required for keyless signing
-      
-      - name: Install cosign
-        uses: sigstore/cosign-installer@main
 
       - name: Verify signing
         run: |
