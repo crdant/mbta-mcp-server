@@ -17,16 +17,16 @@ type Vehicle struct {
 
 // VehicleAttributes contains the attributes of a vehicle
 type VehicleAttributes struct {
-	Bearing             float64            `json:"bearing"`
-	Carriages           []VehicleCarriage  `json:"carriages,omitempty"`
-	CurrentStatus       string             `json:"current_status"`
-	CurrentStopSequence int                `json:"current_stop_sequence"`
-	DirectionID         int                `json:"direction_id"`
-	Label               string             `json:"label"`
-	Latitude            float64            `json:"latitude"`
-	Longitude           float64            `json:"longitude"`
-	Speed               *float64           `json:"speed"`
-	UpdatedAt           string             `json:"updated_at"`
+	Bearing             float64           `json:"bearing"`
+	Carriages           []VehicleCarriage `json:"carriages,omitempty"`
+	CurrentStatus       string            `json:"current_status"`
+	CurrentStopSequence int               `json:"current_stop_sequence"`
+	DirectionID         int               `json:"direction_id"`
+	Label               string            `json:"label"`
+	Latitude            float64           `json:"latitude"`
+	Longitude           float64           `json:"longitude"`
+	Speed               *float64          `json:"speed"`
+	UpdatedAt           string            `json:"updated_at"`
 }
 
 // VehicleCarriage represents individual carriage data for multi-car vehicles
@@ -38,9 +38,9 @@ type VehicleCarriage struct {
 
 // Vehicle status constants as defined by the MBTA API
 const (
-	VehicleStatusIncomingAt   = "INCOMING_AT"
-	VehicleStatusStoppedAt    = "STOPPED_AT"
-	VehicleStatusInTransitTo  = "IN_TRANSIT_TO"
+	VehicleStatusIncomingAt  = "INCOMING_AT"
+	VehicleStatusStoppedAt   = "STOPPED_AT"
+	VehicleStatusInTransitTo = "IN_TRANSIT_TO"
 )
 
 // GetStatusDescription returns a human-readable description of the vehicle's current status

@@ -185,7 +185,7 @@ func (s *Server) getVehiclesHandler(ctx context.Context, request mcp.CallToolReq
 		}
 
 		// Extract radius if provided
-		var radius float64 = 0.01 // default radius
+		radius := 0.01 // default radius
 		if rad, ok := args["radius"]; ok {
 			radius, ok = rad.(float64)
 			if !ok {
@@ -304,16 +304,16 @@ func formatVehiclesResponse(vehicles []models.Vehicle) (*mcp.CallToolResult, err
 	vehiclesData := make([]map[string]interface{}, 0, len(vehicles))
 	for _, vehicle := range vehicles {
 		vehicleMap := map[string]interface{}{
-			"id":          vehicle.ID,
-			"label":       vehicle.Attributes.Label,
-			"status":      vehicle.GetStatusDescription(),
-			"latitude":    vehicle.Attributes.Latitude,
-			"longitude":   vehicle.Attributes.Longitude,
-			"bearing":     vehicle.Attributes.Bearing,
-			"updated_at":  vehicle.Attributes.UpdatedAt,
-			"route_id":    vehicle.GetRouteID(),
-			"stop_id":     vehicle.GetStopID(),
-			"trip_id":     vehicle.GetTripID(),
+			"id":           vehicle.ID,
+			"label":        vehicle.Attributes.Label,
+			"status":       vehicle.GetStatusDescription(),
+			"latitude":     vehicle.Attributes.Latitude,
+			"longitude":    vehicle.Attributes.Longitude,
+			"bearing":      vehicle.Attributes.Bearing,
+			"updated_at":   vehicle.Attributes.UpdatedAt,
+			"route_id":     vehicle.GetRouteID(),
+			"stop_id":      vehicle.GetStopID(),
+			"trip_id":      vehicle.GetTripID(),
 			"direction_id": vehicle.Attributes.DirectionID,
 		}
 
@@ -360,16 +360,16 @@ func formatVehiclesResponse(vehicles []models.Vehicle) (*mcp.CallToolResult, err
 func formatVehicleResponse(vehicle *models.Vehicle) (*mcp.CallToolResult, error) {
 	// Convert the vehicle to a simplified format for the response
 	vehicleMap := map[string]interface{}{
-		"id":          vehicle.ID,
-		"label":       vehicle.Attributes.Label,
-		"status":      vehicle.GetStatusDescription(),
-		"latitude":    vehicle.Attributes.Latitude,
-		"longitude":   vehicle.Attributes.Longitude,
-		"bearing":     vehicle.Attributes.Bearing,
-		"updated_at":  vehicle.Attributes.UpdatedAt,
-		"route_id":    vehicle.GetRouteID(),
-		"stop_id":     vehicle.GetStopID(),
-		"trip_id":     vehicle.GetTripID(),
+		"id":           vehicle.ID,
+		"label":        vehicle.Attributes.Label,
+		"status":       vehicle.GetStatusDescription(),
+		"latitude":     vehicle.Attributes.Latitude,
+		"longitude":    vehicle.Attributes.Longitude,
+		"bearing":      vehicle.Attributes.Bearing,
+		"updated_at":   vehicle.Attributes.UpdatedAt,
+		"route_id":     vehicle.GetRouteID(),
+		"stop_id":      vehicle.GetStopID(),
+		"trip_id":      vehicle.GetTripID(),
 		"direction_id": vehicle.Attributes.DirectionID,
 	}
 

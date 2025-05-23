@@ -244,9 +244,9 @@ func TestVehicleModel(t *testing.T) {
 	t.Run("Vehicle status constants", func(t *testing.T) {
 		// Check that the constants match the expected values
 		expectedStatuses := map[string]string{
-			"INCOMING_AT":     "INCOMING_AT",
-			"STOPPED_AT":      "STOPPED_AT",
-			"IN_TRANSIT_TO":   "IN_TRANSIT_TO",
+			"INCOMING_AT":   "INCOMING_AT",
+			"STOPPED_AT":    "STOPPED_AT",
+			"IN_TRANSIT_TO": "IN_TRANSIT_TO",
 		}
 
 		if VehicleStatusIncomingAt != expectedStatuses["INCOMING_AT"] {

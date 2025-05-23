@@ -17,7 +17,7 @@ func MockServer(handler http.HandlerFunc) *httptest.Server {
 func MockAPIResponse(statusCode int, responseBody string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(statusCode)
+		_, _ = w.WriteHeader(statusCode)
 		_, _ = w.Write([]byte(responseBody))
 	}
 }

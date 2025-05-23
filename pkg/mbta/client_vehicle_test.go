@@ -25,8 +25,8 @@ func TestGetVehicles(t *testing.T) {
 
 			// Return a mock response
 			w.Header().Set("Content-Type", "application/vnd.api+json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{
+			_, _ = w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{
 				"data": [
 					{
 						"attributes": {
@@ -120,8 +120,8 @@ func TestGetVehicles(t *testing.T) {
 
 			// Return a mock response
 			w.Header().Set("Content-Type", "application/vnd.api+json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{
+			_, _ = w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{
 				"data": [
 					{
 						"attributes": {
@@ -227,8 +227,8 @@ func TestGetVehicle(t *testing.T) {
 
 			// Return a mock response
 			w.Header().Set("Content-Type", "application/vnd.api+json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{
+			_, _ = w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{
 				"data": {
 					"attributes": {
 						"bearing": 315.0,
@@ -310,8 +310,8 @@ func TestGetVehicle(t *testing.T) {
 		// Create a test server that returns an error
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/vnd.api+json")
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte(`{
+			_, _ = w.WriteHeader(http.StatusNotFound)
+			_, _ = w.Write([]byte(`{
 				"errors": [
 					{
 						"status": "404",

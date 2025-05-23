@@ -43,7 +43,7 @@ func (s *Server) getVehicleStatusHandler(ctx context.Context, request mcp.CallTo
 		if !ok {
 			return createErrorResponse(fmt.Sprintf("Invalid status_type parameter: %v", statusType)), nil
 		}
-		
+
 		// Convert from user-friendly name to API status value
 		switch statusTypeStr {
 		case "arriving":
@@ -57,7 +57,7 @@ func (s *Server) getVehicleStatusHandler(ctx context.Context, request mcp.CallTo
 		default:
 			return createErrorResponse(fmt.Sprintf("Invalid status_type value: %s. Must be 'arriving', 'stopped', 'in_transit', or 'all'", statusTypeStr)), nil
 		}
-		
+
 		if statusFilter != "" {
 			log.Printf("Filtering status updates by status type: %s", statusFilter)
 			params["filter[current_status]"] = statusFilter
@@ -65,7 +65,7 @@ func (s *Server) getVehicleStatusHandler(ctx context.Context, request mcp.CallTo
 	}
 
 	// Process limit parameter
-	var limit int = 10 // default limit
+	limit := 10 // default limit
 	if limitParam, ok := args["limit"]; ok {
 		limitInt, ok := limitParam.(float64)
 		if !ok {
@@ -83,7 +83,7 @@ func (s *Server) getVehicleStatusHandler(ctx context.Context, request mcp.CallTo
 		} else {
 			limit = int(limitInt)
 		}
-		
+
 		if limit < 1 {
 			limit = 1
 		} else if limit > 50 {
@@ -124,44 +124,44 @@ func (s *Server) getVehicleStatusHandler(ctx context.Context, request mcp.CallTo
 func formatVehicleStatusResponse(vehicles []models.Vehicle) (*mcp.CallToolResult, error) {
 	// Convert the vehicles to a status update format for the response
 	statusUpdates := make([]map[string]interface{}, 0, len(vehicles))
-	
+
 	for _, vehicle := range vehicles {
 		// Base status data
 		statusUpdate := map[string]interface{}{
-			"vehicle_id":    vehicle.ID,
-			"label":         vehicle.Attributes.Label,
-			"status":        vehicle.GetStatusDescription(),
-			"status_code":   vehicle.Attributes.CurrentStatus,
-			"latitude":      vehicle.Attributes.Latitude,
-			"longitude":     vehicle.Attributes.Longitude,
-			"route_id":      vehicle.GetRouteID(),
-			"stop_id":       vehicle.GetStopID(),
-			"trip_id":       vehicle.GetTripID(),
-			"direction_id":  vehicle.Attributes.DirectionID,
-			"updated_at":    vehicle.Attributes.UpdatedAt,
-			"is_moving":     vehicle.Attributes.CurrentStatus == models.VehicleStatusInTransitTo,
+			"vehicle_id":   vehicle.ID,
+			"label":        vehicle.Attributes.Label,
+			"status":       vehicle.GetStatusDescription(),
+			"status_code":  vehicle.Attributes.CurrentStatus,
+			"latitude":     vehicle.Attributes.Latitude,
+			"longitude":    vehicle.Attributes.Longitude,
+			"route_id":     vehicle.GetRouteID(),
+			"stop_id":      vehicle.GetStopID(),
+			"trip_id":      vehicle.GetTripID(),
+			"direction_id": vehicle.Attributes.DirectionID,
+			"updated_at":   vehicle.Attributes.UpdatedAt,
+			"is_moving":    vehicle.Attributes.CurrentStatus == models.VehicleStatusInTransitTo,
 		}
-		
+
 		// Add bearing and speed if moving
 		if vehicle.Attributes.CurrentStatus == models.VehicleStatusInTransitTo {
 			statusUpdate["bearing"] = vehicle.Attributes.Bearing
-			
+
 			if vehicle.Attributes.Speed != nil {
 				statusUpdate["speed"] = *vehicle.Attributes.Speed
 			}
 		}
-		
+
 		// Add occupancy information if available
 		if vehicle.HasOccupancyData() {
 			totalOccupancy := 0
 			for _, carriage := range vehicle.Attributes.Carriages {
 				totalOccupancy += carriage.OccupancyPercentage
 			}
-			
+
 			// Calculate average occupancy
 			averageOccupancy := totalOccupancy / len(vehicle.Attributes.Carriages)
 			statusUpdate["occupancy_percentage"] = averageOccupancy
-			
+
 			// Determine overall occupancy status
 			var overallStatus string
 			if averageOccupancy < 25 {
@@ -175,16 +175,16 @@ func formatVehicleStatusResponse(vehicles []models.Vehicle) (*mcp.CallToolResult
 			}
 			statusUpdate["occupancy_status"] = overallStatus
 		}
-		
+
 		statusUpdates = append(statusUpdates, statusUpdate)
 	}
-	
+
 	// Create JSON string response
 	jsonBytes, err := json.MarshalIndent(statusUpdates, "", "  ")
 	if err != nil {
 		return createErrorResponse(fmt.Sprintf("Failed to serialize status data: %v", err)), nil
 	}
-	
+
 	// Return data as a text content item
 	return &mcp.CallToolResult{
 		Content: []mcp.Content{

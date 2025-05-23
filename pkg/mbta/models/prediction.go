@@ -81,7 +81,7 @@ func (p *Prediction) GetArrivalTime() (*time.Time, error) {
 	if p.Attributes.ArrivalTime == nil {
 		return nil, nil
 	}
-	
+
 	t, err := time.Parse(time.RFC3339, *p.Attributes.ArrivalTime)
 	if err != nil {
 		return nil, err
@@ -94,7 +94,7 @@ func (p *Prediction) GetDepartureTime() (*time.Time, error) {
 	if p.Attributes.DepartureTime == nil {
 		return nil, nil
 	}
-	
+
 	t, err := time.Parse(time.RFC3339, *p.Attributes.DepartureTime)
 	if err != nil {
 		return nil, err
@@ -108,7 +108,7 @@ func (p *Prediction) GetTimeUntilArrival() (*time.Duration, error) {
 	if err != nil || arrivalTime == nil {
 		return nil, err
 	}
-	
+
 	duration := time.Until(*arrivalTime)
 	return &duration, nil
 }
@@ -119,7 +119,7 @@ func (p *Prediction) GetTimeUntilDeparture() (*time.Duration, error) {
 	if err != nil || departureTime == nil {
 		return nil, err
 	}
-	
+
 	duration := time.Until(*departureTime)
 	return &duration, nil
 }
