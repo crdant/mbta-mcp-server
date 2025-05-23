@@ -20,6 +20,9 @@ import (
 func (s *Server) RegisterDefaultHandlers() {
 	// Set up transit information tools
 	s.registerTransitInfoTools()
+
+	// Set up vehicle tracking tools
+	s.registerVehicleTrackingTools()
 }
 
 // registerTransitInfoTools registers the basic transit information tools.

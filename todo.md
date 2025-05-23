@@ -22,7 +22,7 @@ This document tracks the progress of implementing the MBTA MCP server according 
 ### Phase 4: Transit Information Features
 - [x] Implement routes and schedules functionality
 - [x] Add stops and stations information
-- [ ] Create vehicle tracking capabilities
+- [x] Create vehicle tracking capabilities
 
 ### Phase 5: Enhanced Features
 - [ ] Build trip planning functionality
@@ -100,9 +100,9 @@ This document tracks the progress of implementing the MBTA MCP server according 
 - [x] Create accessibility information
 
 #### Step 4.3: Real-time Updates
-- [ ] Implement vehicle tracking
-- [ ] Add arrival predictions
-- [ ] Create status update endpoint
+- [x] Implement vehicle tracking
+- [x] Add arrival predictions
+- [x] Create status update endpoint
 
 ### Phase 5: Enhanced Features
 
