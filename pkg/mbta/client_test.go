@@ -134,12 +134,12 @@ func TestAuthentication(t *testing.T) {
 			// Check API key header
 			authHeader := r.Header.Get("X-API-Key")
 			if authHeader != apiKey {
-				_, _ = w.WriteHeader(http.StatusUnauthorized)
+				w.WriteHeader(http.StatusUnauthorized)
 				_, _ = fmt.Fprintln(w, `{"errors":[{"status":"401","code":"unauthorized","title":"Unauthorized request","detail":"API key missing or invalid"}]}`)
 				return
 			}
 
-			_, _ = w.WriteHeader(http.StatusOK)
+			w.WriteHeader(http.StatusOK)
 			_, _ = fmt.Fprintln(w, `{"data": []}`)
 		}))
 		defer server.Close()
@@ -170,7 +170,7 @@ func TestAuthentication(t *testing.T) {
 			}
 
 			// Public endpoint still works but might have lower rate limits
-			_, _ = w.WriteHeader(http.StatusOK)
+			w.WriteHeader(http.StatusOK)
 			_, _ = fmt.Fprintln(w, `{"data": []}`)
 		}))
 		defer server.Close()
@@ -196,12 +196,12 @@ func TestAuthentication(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Check if API key is invalid
 			if r.Header.Get("X-API-Key") == "invalid-key" {
-				_, _ = w.WriteHeader(http.StatusUnauthorized)
+				w.WriteHeader(http.StatusUnauthorized)
 				_, _ = fmt.Fprintln(w, `{"errors":[{"status":"401","code":"unauthorized","title":"Unauthorized request","detail":"API key invalid"}]}`)
 				return
 			}
 
-			_, _ = w.WriteHeader(http.StatusOK)
+			w.WriteHeader(http.StatusOK)
 			_, _ = fmt.Fprintln(w, `{"data": []}`)
 		}))
 		defer server.Close()

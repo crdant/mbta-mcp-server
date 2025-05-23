@@ -86,7 +86,7 @@ func TestNewMockServer(t *testing.T) {
 func TestMockValidAPIKeyMiddleware(t *testing.T) {
 	// Create a simple handler
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("success"))
 	})
 
@@ -155,7 +155,7 @@ func TestMockValidAPIKeyMiddleware(t *testing.T) {
 func TestMockRateLimitMiddleware(t *testing.T) {
 	// Create a simple handler
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("success"))
 	})
 

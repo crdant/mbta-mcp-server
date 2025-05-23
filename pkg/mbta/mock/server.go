@@ -30,7 +30,7 @@ func NewMockServer(definitions []ResponseDefinition) *httptest.Server {
 					w.Header().Set(key, value)
 				}
 				// Set status code
-				_, _ = w.WriteHeader(def.StatusCode)
+				w.WriteHeader(def.StatusCode)
 				// Write response
 				_, _ = w.Write([]byte(def.Response))
 				return
@@ -38,7 +38,7 @@ func NewMockServer(definitions []ResponseDefinition) *httptest.Server {
 		}
 
 		// If no definition matches, return 404
-		_, _ = w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusNotFound)
 		_, _ = w.Write([]byte(`{"errors":[{"status":"404","code":"not_found","title":"Not Found","detail":"The requested resource was not found"}]}`))
 	}))
 }
@@ -59,7 +59,7 @@ func MockValidAPIKeyMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		apiKey := r.Header.Get("X-API-Key")
 		if apiKey == "" || apiKey == "invalid-key" {
-			_, _ = w.WriteHeader(http.StatusUnauthorized)
+			w.WriteHeader(http.StatusUnauthorized)
 			_, _ = w.Write([]byte(`{"errors":[{"status":"401","code":"unauthorized","title":"Unauthorized request","detail":"API key missing or invalid"}]}`))
 			return
 		}
@@ -73,7 +73,7 @@ func MockRateLimitMiddleware(next http.Handler) http.Handler {
 		// If request path contains "rate-limited", simulate a rate limit response
 		if strings.Contains(r.URL.Path, "rate-limited") {
 			w.Header().Set("Retry-After", "60")
-			_, _ = w.WriteHeader(http.StatusTooManyRequests)
+			w.WriteHeader(http.StatusTooManyRequests)
 			_, _ = w.Write([]byte(`{"errors":[{"status":"429","code":"rate_limited","title":"Rate Limit Exceeded","detail":"You have exceeded your rate limit"}]}`))
 			return
 		}
@@ -472,14 +472,14 @@ func StandardMockServer() (*httptest.Server, error) {
 	// Routes endpoint
 	handler.HandleFunc("/routes", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/vnd.api+json")
-		_, _ = w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusOK)
 		_, _ = io.WriteString(w, routesResponse)
 	})
 
 	// Single route endpoint
 	handler.HandleFunc("/routes/Red", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/vnd.api+json")
-		_, _ = w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusOK)
 		// Extract just the Red line from the fixture
 		_, _ = io.WriteString(w, `{"data": {"id":"Red","type":"route","attributes":{"color":"DA291C","description":"Rapid Transit","direction_destinations":["Alewife","Ashmont/Braintree"],"direction_names":["Outbound","Inbound"],"fare_class":"Rapid Transit","long_name":"Red Line","short_name":"","sort_order":10010,"text_color":"FFFFFF","type":1},"links":{"self":"/routes/Red"},"relationships":{"line":{"data":{"id":"line-Red","type":"line"}}}}}`)
 	})
@@ -487,28 +487,28 @@ func StandardMockServer() (*httptest.Server, error) {
 	// Stops endpoint
 	handler.HandleFunc("/stops", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/vnd.api+json")
-		_, _ = w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusOK)
 		_, _ = io.WriteString(w, stopsResponse)
 	})
 
 	// Schedules endpoint
 	handler.HandleFunc("/schedules", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/vnd.api+json")
-		_, _ = w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusOK)
 		_, _ = io.WriteString(w, schedulesResponse)
 	})
 
 	// Vehicles endpoint
 	handler.HandleFunc("/vehicles", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/vnd.api+json")
-		_, _ = w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusOK)
 		_, _ = io.WriteString(w, vehiclesResponse)
 	})
 
 	// Single vehicle endpoint
 	handler.HandleFunc("/vehicles/R-5463D359", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/vnd.api+json")
-		_, _ = w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusOK)
 		_, _ = io.WriteString(w, vehicleResponse)
 	})
 
@@ -518,7 +518,7 @@ func StandardMockServer() (*httptest.Server, error) {
 		vehicleFilter := r.URL.Query().Get("filter[vehicle]")
 
 		w.Header().Set("Content-Type", "application/vnd.api+json")
-		_, _ = w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusOK)
 
 		switch vehicleFilter {
 		case "R-5463D359":
@@ -535,7 +535,7 @@ func StandardMockServer() (*httptest.Server, error) {
 	// Not found handler
 	handler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/vnd.api+json")
-		_, _ = w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusNotFound)
 		_, _ = io.WriteString(w, `{"errors":[{"status":"404","code":"not_found","title":"Not Found","detail":"The requested resource was not found"}]}`)
 	})
 

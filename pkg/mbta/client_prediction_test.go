@@ -60,7 +60,7 @@ func TestGetPredictions(t *testing.T) {
 
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.WriteHeader(http.StatusOK)
+			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write([]byte(mockPredictionsResponse))
 		}))
 		defer server.Close()
@@ -114,7 +114,7 @@ func TestGetPredictions(t *testing.T) {
 			jsonBytes, _ := json.Marshal(response)
 
 			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.WriteHeader(http.StatusOK)
+			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write(jsonBytes)
 		}))
 		defer server.Close()
@@ -152,7 +152,7 @@ func TestGetPredictions(t *testing.T) {
 			jsonBytes, _ := json.Marshal(response)
 
 			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.WriteHeader(http.StatusOK)
+			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write(jsonBytes)
 		}))
 		defer server.Close()
@@ -190,7 +190,7 @@ func TestGetPredictions(t *testing.T) {
 			jsonBytes, _ := json.Marshal(response)
 
 			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.WriteHeader(http.StatusOK)
+			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write(jsonBytes)
 		}))
 		defer server.Close()
@@ -237,7 +237,7 @@ func TestGetPredictions(t *testing.T) {
 			jsonBytes, _ := json.Marshal(response)
 
 			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.WriteHeader(http.StatusOK)
+			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write(jsonBytes)
 		}))
 		defer server.Close()
