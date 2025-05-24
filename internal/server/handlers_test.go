@@ -46,7 +46,7 @@ func TestGetRoutesHandler(t *testing.T) {
 	}
 
 	// Create MBTA client with mock server
-	mbtaClient := mbta.NewClient(cfg)
+	_ = mbta.NewClient(cfg)
 
 	// Create MCP server with the MBTA client
 	server, err := New(cfg)
@@ -171,7 +171,8 @@ func TestGetRoutesHandler(t *testing.T) {
 		// This tests that the handler will eventually be implemented to return
 		// structured data, not just text
 		handler := func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-			routes, err := mbtaClient.GetRoutes(ctx)
+			client := mbta.NewClient(cfg)
+			routes, err := client.GetRoutes(ctx)
 			if err != nil {
 				return createErrorResponse("Failed to retrieve routes: " + err.Error()), nil
 			}
@@ -274,25 +275,183 @@ func TestGetStopsHandler(t *testing.T) {
 	defer mockServer.Close()
 
 	// Create config pointing to mock server
-	_ = &config.Config{
+	cfg := &config.Config{
 		APIKey:     "test-api-key",
 		APIBaseURL: mockServer.URL,
 	}
 
+	// Create MBTA client with mock server
+	_ = mbta.NewClient(cfg)
+
+	// Create MCP server with the MBTA client
+	server, err := New(cfg)
+	if err != nil {
+		t.Fatalf("Failed to create server: %v", err)
+	}
+
 	t.Run("Get stops handler can be registered", func(t *testing.T) {
-		t.Skip("Will be implemented when the stops handler is added")
+		// Register the stops handler
+		server.registerTransitInfoTools()
 	})
 
 	t.Run("Get stops returns valid stop data", func(t *testing.T) {
-		t.Skip("Will be implemented when the stops handler is added")
+		// Create a request for the stops handler
+		request := mcp.CallToolRequest{
+			Params: struct {
+				Name      string         `json:"name"`
+				Arguments map[string]any `json:"arguments,omitempty"`
+				Meta      *struct {
+					ProgressToken mcp.ProgressToken `json:"progressToken,omitempty"`
+				} `json:"_meta,omitempty"`
+			}{
+				Name:      "get_stops",
+				Arguments: map[string]any{},
+			},
+		}
+
+		// Call the handler
+		result, err := server.getStopsHandler(context.Background(), request)
+
+		// Check for errors
+		if err != nil {
+			t.Fatalf("Handler returned error: %v", err)
+		}
+
+		// Verify result isn't nil
+		if result == nil {
+			t.Fatal("Handler returned nil result")
+		}
+
+		// Check that content is returned
+		if len(result.Content) == 0 {
+			t.Fatal("Handler returned empty content")
+		}
+
+		// Verify content type is text
+		textContent, ok := result.Content[0].(mcp.TextContent)
+		if !ok {
+			t.Fatalf("Content is not TextContent, got: %T", result.Content[0])
+		}
+
+		// Verify the text indicates success
+		if textContent.Text == "" {
+			t.Error("Text content is empty")
+		}
 	})
 
 	t.Run("Get stops handles filtering by location type", func(t *testing.T) {
-		t.Skip("Will be implemented when the stops handler is added")
+		// Create a request with location type filter
+		request := mcp.CallToolRequest{
+			Params: struct {
+				Name      string         `json:"name"`
+				Arguments map[string]any `json:"arguments,omitempty"`
+				Meta      *struct {
+					ProgressToken mcp.ProgressToken `json:"progressToken,omitempty"`
+				} `json:"_meta,omitempty"`
+			}{
+				Name: "get_stops",
+				Arguments: map[string]any{
+					"location_type": "1", // Station
+				},
+			},
+		}
+
+		// Call the handler
+		result, err := server.getStopsHandler(context.Background(), request)
+
+		// Check for errors
+		if err != nil {
+			t.Fatalf("Handler returned error: %v", err)
+		}
+
+		// Verify result isn't nil
+		if result == nil {
+			t.Fatal("Handler returned nil result")
+		}
 	})
 
 	t.Run("Get stops handles filtering by stop ID", func(t *testing.T) {
-		t.Skip("Will be implemented when the stops handler is added")
+		// Create a request with stop ID filter
+		request := mcp.CallToolRequest{
+			Params: struct {
+				Name      string         `json:"name"`
+				Arguments map[string]any `json:"arguments,omitempty"`
+				Meta      *struct {
+					ProgressToken mcp.ProgressToken `json:"progressToken,omitempty"`
+				} `json:"_meta,omitempty"`
+			}{
+				Name: "get_stops",
+				Arguments: map[string]any{
+					"stop_id": "place-north",
+				},
+			},
+		}
+
+		// Call the handler
+		result, err := server.getStopsHandler(context.Background(), request)
+
+		// Check for errors
+		if err != nil {
+			t.Fatalf("Handler returned error: %v", err)
+		}
+
+		// Verify result isn't nil
+		if result == nil {
+			t.Fatal("Handler returned nil result")
+		}
+	})
+
+	t.Run("Get stops handles filtering by route ID", func(t *testing.T) {
+		// Create a request with route ID filter
+		request := mcp.CallToolRequest{
+			Params: struct {
+				Name      string         `json:"name"`
+				Arguments map[string]any `json:"arguments,omitempty"`
+				Meta      *struct {
+					ProgressToken mcp.ProgressToken `json:"progressToken,omitempty"`
+				} `json:"_meta,omitempty"`
+			}{
+				Name: "get_stops",
+				Arguments: map[string]any{
+					"route_id": "Red",
+				},
+			},
+		}
+
+		// Call the handler
+		result, err := server.getStopsHandler(context.Background(), request)
+
+		// Check for errors
+		if err != nil {
+			t.Fatalf("Handler returned error: %v", err)
+		}
+
+		// Verify result isn't nil
+		if result == nil {
+			t.Fatal("Handler returned nil result")
+		}
+
+		// Verify content is returned
+		if len(result.Content) == 0 {
+			t.Fatal("Handler returned empty content")
+		}
+
+		// Verify the content is as expected
+		textContent, ok := result.Content[0].(mcp.TextContent)
+		if !ok {
+			t.Fatalf("Content is not TextContent, got: %T", result.Content[0])
+		}
+
+		// Parse the JSON response to verify filtering worked
+		var stopsData []map[string]interface{}
+		if err := json.Unmarshal([]byte(textContent.Text), &stopsData); err != nil {
+			t.Fatalf("Failed to parse stop response: %v", err)
+		}
+
+		// There should be some stops returned
+		if len(stopsData) == 0 {
+			t.Error("No stops returned after route filtering")
+		}
 	})
 }
 
