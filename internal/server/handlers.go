@@ -26,6 +26,9 @@ func (s *Server) RegisterDefaultHandlers() {
 
 	// Set up trip planning tools
 	s.registerTripPlanningTools()
+
+	// Set up service alert tools
+	s.registerServiceAlertTools()
 }
 
 // registerTransitInfoTools registers the basic transit information tools.
