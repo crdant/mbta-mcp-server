@@ -1,4 +1,4 @@
-include .env
+-include .env
 
 BINARY_NAME=mbta-mcp-server
 GIT_SHORT_SHA=$(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
