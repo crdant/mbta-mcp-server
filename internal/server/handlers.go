@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/crdant/mbta-mcp-server/pkg/mbta"
 	"github.com/crdant/mbta-mcp-server/pkg/mbta/models"
@@ -99,6 +100,10 @@ func (s *Server) registerTransitInfoTools() {
 				"direction_id": map[string]any{
 					"type":        "string",
 					"description": "Filter by direction (0=outbound, 1=inbound)",
+				},
+				"date": map[string]any{
+					"type":        "string",
+					"description": "Filter by service date (YYYY-MM-DD format). If not provided, uses current date.",
 				},
 			},
 		},
@@ -352,6 +357,7 @@ func (s *Server) getSchedulesHandler(ctx context.Context, request mcp.CallToolRe
 	routeID, hasRouteID := args["route_id"]
 	stopID, hasStopID := args["stop_id"]
 	directionID, hasDirectionID := args["direction_id"]
+	date, hasDate := args["date"]
 
 	// Log the request details
 	if hasRouteID {
@@ -362,6 +368,9 @@ func (s *Server) getSchedulesHandler(ctx context.Context, request mcp.CallToolRe
 	}
 	if hasDirectionID {
 		log.Printf("Filtering by direction ID: %v", directionID)
+	}
+	if hasDate {
+		log.Printf("Filtering by date: %v", date)
 	}
 
 	// Build query parameters
@@ -389,6 +398,23 @@ func (s *Server) getSchedulesHandler(ctx context.Context, request mcp.CallToolRe
 			return createErrorResponse(fmt.Sprintf("Invalid direction_id parameter: %v", directionID)), nil
 		}
 		params["filter[direction_id]"] = directionIDStr
+	}
+
+	if hasDate {
+		dateStr, ok := date.(string)
+		if !ok {
+			return createErrorResponse(fmt.Sprintf("Invalid date parameter: %v", date)), nil
+		}
+
+		// Validate date format (YYYY-MM-DD)
+		if _, err := time.Parse("2006-01-02", dateStr); err != nil {
+			return createErrorResponse(fmt.Sprintf("Invalid date format. Expected YYYY-MM-DD, got: %v", dateStr)), nil
+		}
+
+		params["filter[date]"] = dateStr
+	} else {
+		// Default to current date if not specified
+		params["filter[date]"] = time.Now().Format("2006-01-02")
 	}
 
 	// Get schedules
