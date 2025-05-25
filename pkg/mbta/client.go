@@ -22,6 +22,36 @@ type Client struct {
 	httpClient *http.Client
 }
 
+// GetStopsForRoute returns all stops served by a specific route
+func (c *Client) GetStopsForRoute(ctx context.Context, routeID string) ([]string, error) {
+	// Use query parameters to filter stops by route
+	query := url.Values{}
+	query.Add("filter[route]", routeID)
+	query.Add("fields[stop]", "id")
+
+	path := "/stops?" + query.Encode()
+
+	stopsResp, err := c.makeRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = stopsResp.Body.Close() }()
+
+	// Parse response
+	var stopResponse models.StopResponse
+	if err := json.NewDecoder(stopsResp.Body).Decode(&stopResponse); err != nil {
+		return nil, fmt.Errorf("error decoding stop response: %w", err)
+	}
+
+	// Extract stop IDs
+	stopIDs := make([]string, len(stopResponse.Data))
+	for i, stop := range stopResponse.Data {
+		stopIDs[i] = stop.ID
+	}
+
+	return stopIDs, nil
+}
+
 // NewClient creates a new MBTA API client with the provided configuration
 func NewClient(cfg *config.Config) *Client {
 	// Create transport with sensible defaults
