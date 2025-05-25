@@ -301,10 +301,33 @@ func (s *Server) getStopsHandler(ctx context.Context, request mcp.CallToolReques
 		stops = filteredStops
 	}
 
-	// TODO: Add filtering by route ID (would require additional API call)
+	// Filter by route ID if specified
 	if hasRouteID {
-		// For now, just note that this feature is not yet implemented
-		log.Printf("Route ID filtering not implemented yet")
+		routeIDStr, ok := routeID.(string)
+		if !ok {
+			return createErrorResponse(fmt.Sprintf("Invalid route_id parameter: %v", routeID)), nil
+		}
+
+		routeStopIDs, err := client.GetStopsForRoute(ctx, routeIDStr)
+		if err != nil {
+			return createErrorResponse(fmt.Sprintf("Failed to retrieve stops for route %s: %v", routeIDStr, err)), nil
+		}
+
+		// Filter stops to only include those on the route
+		routeStopsMap := make(map[string]bool)
+		for _, id := range routeStopIDs {
+			routeStopsMap[id] = true
+		}
+
+		filteredStops := make([]models.Stop, 0)
+		for _, stop := range stops {
+			if routeStopsMap[stop.ID] {
+				filteredStops = append(filteredStops, stop)
+			}
+		}
+
+		stops = filteredStops
+		log.Printf("Filtered to %d stops on route %s", len(stops), routeIDStr)
 	}
 
 	// Convert slice of value types to slice of pointer types for formatting
