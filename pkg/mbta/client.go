@@ -210,12 +210,25 @@ func (c *Client) GetStop(ctx context.Context, stopID string) (*models.Stop, erro
 	return &stopData.Data, nil
 }
 
-// GetSchedules retrieves schedules by route, stop, or trip ID
+// GetSchedules retrieves schedules by route, stop, trip ID, and date
+// Supported filter parameters include:
+// - filter[route]: Filter by route ID
+// - filter[stop]: Filter by stop ID
+// - filter[trip]: Filter by trip ID
+// - filter[direction_id]: Filter by direction (0=outbound, 1=inbound)
+// - filter[date]: Filter by service date (YYYY-MM-DD format)
+// - filter[min_time]: Filter by minimum departure time (HH:MM format)
+// - filter[max_time]: Filter by maximum departure time (HH:MM format)
 func (c *Client) GetSchedules(ctx context.Context, params map[string]string) ([]models.Schedule, []models.Included, error) {
 	// Build query parameters
 	query := url.Values{}
 	for key, value := range params {
 		query.Add(key, value)
+	}
+
+	// If date filter isn't provided, use today's date
+	if _, hasDate := params["filter[date]"]; !hasDate {
+		query.Add("filter[date]", time.Now().Format("2006-01-02"))
 	}
 
 	path := "/schedules"

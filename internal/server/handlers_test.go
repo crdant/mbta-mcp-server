@@ -6,6 +6,7 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/crdant/mbta-mcp-server/internal/config"
@@ -465,25 +466,219 @@ func TestGetSchedulesHandler(t *testing.T) {
 	defer mockServer.Close()
 
 	// Create config pointing to mock server
-	_ = &config.Config{
+	cfg := &config.Config{
 		APIKey:     "test-api-key",
 		APIBaseURL: mockServer.URL,
 	}
 
+	// Create MCP server with the MBTA client
+	server, err := New(cfg)
+	if err != nil {
+		t.Fatalf("Failed to create server: %v", err)
+	}
+
 	t.Run("Get schedules handler can be registered", func(t *testing.T) {
-		t.Skip("Will be implemented when the schedules handler is added")
+		// Register the transit info tools, which includes schedules
+		server.registerTransitInfoTools()
 	})
 
 	t.Run("Get schedules returns valid schedule data", func(t *testing.T) {
-		t.Skip("Will be implemented when the schedules handler is added")
+		// Create a request for the schedules handler
+		request := mcp.CallToolRequest{
+			Params: struct {
+				Name      string         `json:"name"`
+				Arguments map[string]any `json:"arguments,omitempty"`
+				Meta      *struct {
+					ProgressToken mcp.ProgressToken `json:"progressToken,omitempty"`
+				} `json:"_meta,omitempty"`
+			}{
+				Name:      "get_schedules",
+				Arguments: map[string]any{},
+			},
+		}
+
+		// Call the handler
+		result, err := server.getSchedulesHandler(context.Background(), request)
+
+		// Check for errors
+		if err != nil {
+			t.Fatalf("Handler returned error: %v", err)
+		}
+
+		// Verify result isn't nil
+		if result == nil {
+			t.Fatal("Handler returned nil result")
+		}
+
+		// Check that content is returned
+		if len(result.Content) == 0 {
+			t.Fatal("Handler returned empty content")
+		}
+
+		// Verify content type is text
+		textContent, ok := result.Content[0].(mcp.TextContent)
+		if !ok {
+			t.Fatalf("Content is not TextContent, got: %T", result.Content[0])
+		}
+
+		// Verify the text indicates success
+		if textContent.Text == "" {
+			t.Error("Text content is empty")
+		}
 	})
 
 	t.Run("Get schedules handles filtering by route", func(t *testing.T) {
-		t.Skip("Will be implemented when the schedules handler is added")
+		// Create a request with route filter
+		request := mcp.CallToolRequest{
+			Params: struct {
+				Name      string         `json:"name"`
+				Arguments map[string]any `json:"arguments,omitempty"`
+				Meta      *struct {
+					ProgressToken mcp.ProgressToken `json:"progressToken,omitempty"`
+				} `json:"_meta,omitempty"`
+			}{
+				Name: "get_schedules",
+				Arguments: map[string]any{
+					"route_id": "Red",
+				},
+			},
+		}
+
+		// Call the handler
+		result, err := server.getSchedulesHandler(context.Background(), request)
+
+		// Check for errors
+		if err != nil {
+			t.Fatalf("Handler returned error: %v", err)
+		}
+
+		// Verify result isn't nil
+		if result == nil {
+			t.Fatal("Handler returned nil result")
+		}
 	})
 
 	t.Run("Get schedules handles filtering by stop", func(t *testing.T) {
-		t.Skip("Will be implemented when the schedules handler is added")
+		// Create a request with stop filter
+		request := mcp.CallToolRequest{
+			Params: struct {
+				Name      string         `json:"name"`
+				Arguments map[string]any `json:"arguments,omitempty"`
+				Meta      *struct {
+					ProgressToken mcp.ProgressToken `json:"progressToken,omitempty"`
+				} `json:"_meta,omitempty"`
+			}{
+				Name: "get_schedules",
+				Arguments: map[string]any{
+					"stop_id": "place-sstat",
+				},
+			},
+		}
+
+		// Call the handler
+		result, err := server.getSchedulesHandler(context.Background(), request)
+
+		// Check for errors
+		if err != nil {
+			t.Fatalf("Handler returned error: %v", err)
+		}
+
+		// Verify result isn't nil
+		if result == nil {
+			t.Fatal("Handler returned nil result")
+		}
+	})
+
+	t.Run("Get schedules handles filtering by date", func(t *testing.T) {
+		// Create a request with date filter
+		request := mcp.CallToolRequest{
+			Params: struct {
+				Name      string         `json:"name"`
+				Arguments map[string]any `json:"arguments,omitempty"`
+				Meta      *struct {
+					ProgressToken mcp.ProgressToken `json:"progressToken,omitempty"`
+				} `json:"_meta,omitempty"`
+			}{
+				Name: "get_schedules",
+				Arguments: map[string]any{
+					"date": "2023-05-20",
+				},
+			},
+		}
+
+		// Call the handler
+		result, err := server.getSchedulesHandler(context.Background(), request)
+
+		// Check for errors
+		if err != nil {
+			t.Fatalf("Handler returned error: %v", err)
+		}
+
+		// Verify result isn't nil
+		if result == nil {
+			t.Fatal("Handler returned nil result")
+		}
+
+		// Get the content as text
+		textContent, ok := result.Content[0].(mcp.TextContent)
+		if !ok {
+			t.Fatalf("Content is not TextContent, got: %T", result.Content[0])
+		}
+
+		// Parse the response to verify schedules are for the correct date
+		var schedulesData []map[string]interface{}
+		if err := json.Unmarshal([]byte(textContent.Text), &schedulesData); err != nil {
+			t.Fatalf("Failed to parse schedules response: %v", err)
+		}
+
+		// All schedules should contain the date 2023-05-20
+		for _, schedule := range schedulesData {
+			arrivalTime, ok := schedule["arrival_time"].(string)
+			if !ok {
+				t.Errorf("Missing or invalid arrival_time in schedule: %v", schedule)
+				continue
+			}
+
+			if !strings.Contains(arrivalTime, "2023-05-20") {
+				t.Errorf("Schedule arrival_time %q does not match requested date 2023-05-20", arrivalTime)
+			}
+		}
+	})
+
+	t.Run("Get schedules returns error with invalid date format", func(t *testing.T) {
+		// Create a request with invalid date filter
+		request := mcp.CallToolRequest{
+			Params: struct {
+				Name      string         `json:"name"`
+				Arguments map[string]any `json:"arguments,omitempty"`
+				Meta      *struct {
+					ProgressToken mcp.ProgressToken `json:"progressToken,omitempty"`
+				} `json:"_meta,omitempty"`
+			}{
+				Name: "get_schedules",
+				Arguments: map[string]any{
+					"date": "05/20/2023", // Invalid format, should be YYYY-MM-DD
+				},
+			},
+		}
+
+		// Call the handler
+		result, err := server.getSchedulesHandler(context.Background(), request)
+
+		// Check that we got a result, not an error
+		if err != nil {
+			t.Fatalf("Handler returned error: %v", err)
+		}
+
+		// Verify result isn't nil
+		if result == nil {
+			t.Fatal("Handler returned nil result")
+		}
+
+		// Verify that IsError is set to true
+		if !result.IsError {
+			t.Error("Expected result to have IsError=true for invalid date format")
+		}
 	})
 }
 
