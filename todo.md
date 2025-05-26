@@ -27,7 +27,7 @@ This document tracks the progress of implementing the MBTA MCP server according 
 ### Phase 5: Enhanced Features
 - [x] Build trip planning functionality
 - [x] Implement service alerts and disruptions
-- [ ] Add accessibility information queries
+- [x] Add accessibility information queries
 
 ### Phase 6: Deployment and Documentation
 - [x] Containerize application
@@ -117,7 +117,7 @@ This document tracks the progress of implementing the MBTA MCP server according 
 - [x] Create alert notification endpoint
 
 #### Step 5.3: Geographic Queries
-- [ ] Implement station proximity search
+- [x] Implement station proximity search
 - [ ] Add route coverage mapping
 - [ ] Create location-based recommendations
 
