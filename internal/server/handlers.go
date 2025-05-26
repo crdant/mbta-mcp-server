@@ -30,6 +30,9 @@ func (s *Server) RegisterDefaultHandlers() {
 
 	// Set up service alert tools
 	s.registerServiceAlertTools()
+
+	// Set up geographic query tools
+	s.registerGeographicQueryTools()
 }
 
 // registerTransitInfoTools registers the basic transit information tools.
