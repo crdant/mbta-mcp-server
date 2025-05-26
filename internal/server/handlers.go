@@ -30,6 +30,9 @@ func (s *Server) RegisterDefaultHandlers() {
 
 	// Set up service alert tools
 	s.registerServiceAlertTools()
+
+	// Set up geographic query tools
+	s.registerGeographicQueryTools()
 }
 
 // registerTransitInfoTools registers the basic transit information tools.
@@ -574,9 +577,29 @@ func formatScheduleResponse(schedules []models.Schedule, included []models.Inclu
 
 // createErrorResponse creates a standardized error response for MCP requests.
 func createErrorResponse(message string) *mcp.CallToolResult {
+	// Create a JSON error object for better parsing by clients
+	errorObj := map[string]string{
+		"error": message,
+	}
+
+	// Convert to JSON
+	jsonBytes, err := json.MarshalIndent(errorObj, "", "  ")
+	if err != nil {
+		// Fallback to plain text if JSON marshaling fails
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{
+				mcp.TextContent{
+					Type: "text",
+					Text: fmt.Sprintf("Error: %s", message),
+				},
+			},
+			IsError: true,
+		}
+	}
+
 	errorContent := mcp.TextContent{
 		Type: "text",
-		Text: message,
+		Text: string(jsonBytes),
 	}
 
 	return &mcp.CallToolResult{

@@ -94,3 +94,9 @@ func (s *Stop) IsStation() bool {
 func (s *Stop) IsPlatform() bool {
 	return s.Attributes.LocationType == LocationTypePlatform
 }
+
+// NearbyStation represents a stop with distance information from a search point
+type NearbyStation struct {
+	Stop       Stop    `json:"stop"`
+	DistanceKm float64 `json:"distance_km"`
+}
