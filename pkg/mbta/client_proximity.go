@@ -20,7 +20,7 @@ import (
 func (c *Client) FindNearbyStations(ctx context.Context, lat, lon, radius float64, maxResults int, onlyStations bool) ([]models.NearbyStation, error) {
 	// Build query parameters
 	query := url.Values{}
-	
+
 	// If only interested in stations, filter by location_type=1
 	if onlyStations {
 		query.Add("filter[location_type]", strconv.Itoa(models.LocationTypeStation))
@@ -32,7 +32,7 @@ func (c *Client) FindNearbyStations(ctx context.Context, lat, lon, radius float6
 	if err != nil {
 		return nil, fmt.Errorf("failed to get stations: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Parse response
 	var stopResponse models.StopResponse

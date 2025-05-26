@@ -126,20 +126,7 @@ func TestFindNearbyStationsHandler(t *testing.T) {
 	})
 }
 
-// Mock station proximity results for testing
-type mockProximityResult struct {
-	nearbyStations []models.NearbyStation
-	err            error
-}
-
-// Mock client that returns predefined results for testing
-type mockMBTAClient struct {
-	proximityResults mockProximityResult
-}
-
-func (m *mockMBTAClient) FindNearbyStations(ctx context.Context, lat, lon, radius float64, maxResults int, onlyStations bool) ([]models.NearbyStation, error) {
-	return m.proximityResults.nearbyStations, m.proximityResults.err
-}
+// Mock code removed to fix linting errors
 
 func TestFindNearbyStationsResponse(t *testing.T) {
 	// Test formatting of station proximity results
