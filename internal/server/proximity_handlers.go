@@ -65,7 +65,7 @@ func (s *Server) findNearbyStationsHandler(ctx context.Context, request mcp.Call
 
 	// Extract required parameters
 	args := request.Params.Arguments
-	
+
 	// Get latitude
 	latitude, ok := args["latitude"].(float64)
 	if !ok {
@@ -159,15 +159,15 @@ func formatNearbyStationsResponse(stations []models.NearbyStation) (*mcp.CallToo
 
 	for _, station := range stations {
 		stationMap := map[string]interface{}{
-			"id":                   station.Stop.ID,
-			"name":                 station.Stop.Attributes.Name,
-			"distance_km":          station.DistanceKm,
-			"distance_miles":       station.DistanceKm * 0.621371, // Convert to miles
-			"latitude":             station.Stop.Attributes.Latitude,
-			"longitude":            station.Stop.Attributes.Longitude,
-			"municipality":         station.Stop.Attributes.Municipality,
-			"location_type":        station.Stop.Attributes.LocationType,
-			"location_description": models.GetLocationTypeDescription(station.Stop.Attributes.LocationType),
+			"id":                    station.Stop.ID,
+			"name":                  station.Stop.Attributes.Name,
+			"distance_km":           station.DistanceKm,
+			"distance_miles":        station.DistanceKm * 0.621371, // Convert to miles
+			"latitude":              station.Stop.Attributes.Latitude,
+			"longitude":             station.Stop.Attributes.Longitude,
+			"municipality":          station.Stop.Attributes.Municipality,
+			"location_type":         station.Stop.Attributes.LocationType,
+			"location_description":  models.GetLocationTypeDescription(station.Stop.Attributes.LocationType),
 			"wheelchair_accessible": station.Stop.IsAccessible(),
 			"wheelchair_boarding":   station.Stop.Attributes.WheelchairBoarding,
 			"accessibility_status":  models.GetWheelchairBoardingDescription(station.Stop.Attributes.WheelchairBoarding),
